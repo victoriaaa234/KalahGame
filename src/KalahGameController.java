@@ -7,6 +7,7 @@ public class KalahGameController
 {
 	private int[] kalahBoard;
 	private Boolean isGameOver;
+	private Computer AI;
 	
 	public KalahGameController()
 	{		
@@ -31,6 +32,8 @@ public class KalahGameController
 		kalahBoard[13] = 0;
 		
 		isGameOver = false;
+		AI = new Computer();
+
 	}
 	
 	// If human wins, return 0. If computer wins, return 1. If a tie, return 2.
@@ -195,11 +198,14 @@ public class KalahGameController
 	
 	private int execGetComputerPlay()
 	{
+		// Computer needs current state of the board to decide next move
+		AI.setBoard(kalahBoard);
+		
 		// TODO(Drew): Should we check the validity of the computer move?
 		
 		// TODO(Drew): Implement this
 		
-		return 0;
+		return AI.getBestMove();
 	}
 	
 	private void execGameOver(Scanner scanner, int winnerIdx)
@@ -230,7 +236,7 @@ public class KalahGameController
 		scanner.nextLine();
 	}
 	
-	private Boolean execMakePlay(int moveLocation) throws IOException
+	private Boolean execMakePlay(int moveLocation, String user) throws IOException
 	{
 		Boolean bonusTurn = false;
 		
@@ -238,10 +244,14 @@ public class KalahGameController
 		{
 			int startIdx = moveLocation + 1;
 			int finishIdx = startIdx;
-			
+
 			while (kalahBoard[moveLocation] > 0)
 			{
 				finishIdx = startIdx;
+				if(user == "Human" && finishIdx == 13 || user == "Computer" && finishIdx == 6) {
+					startIdx = 0;
+					continue;
+				}
 				kalahBoard[moveLocation]--;
 				kalahBoard[startIdx]++;
 				startIdx++;
@@ -299,7 +309,7 @@ public class KalahGameController
 	
 	public int getNumSeedsInComputerEnd()
 	{
-		int result = kalahBoard[6];
+		int result = kalahBoard[13];
 		
 		return result;
 	}
@@ -341,9 +351,7 @@ public class KalahGameController
 		
 		execLaunchScreen(scanner);
 		
-		// TODO(Drew): Get random number from opposing player
-		// For now we just give 5.
-		Boolean humanGoesFirst = execFindFirstPlayer(scanner, 5);
+		Boolean humanGoesFirst = execFindFirstPlayer(scanner, AI.randomMoveSelect());
 		Boolean gameRunning = true;
 		Boolean humanTurn = false;
 		
@@ -362,7 +370,7 @@ public class KalahGameController
 					printKalahBoard();
 					
 					int moveLocation = execGetHumanPlay(scanner);
-					bonusTurn = execMakePlay(moveLocation);
+					bonusTurn = execMakePlay(moveLocation, "Human");
 				} while (bonusTurn);
 				humanTurn = false;
 			}
@@ -374,7 +382,7 @@ public class KalahGameController
 					
 					// TODO(Drew): Get move from the AI
 					int moveLocation = execGetComputerPlay();
-					// bonusTurn = execMakePlay(moveLocation);
+					// bonusTurn = execMakePlay(moveLocation, "Computer");
 					// NOTE(Drew): Remove this!
 					System.out.println("The computer skips its turn.");
 				} while (bonusTurn);
