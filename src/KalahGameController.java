@@ -212,13 +212,11 @@ public class KalahGameController
 	private int execGetComputerPlay()
 	{
 		// Computer needs current state of the board to decide next move
-		AI.setBoard(kalahBoard);
 		
 		// TODO(Drew): Should we check the validity of the computer move?
-		
-		// TODO(Drew): Implement this
-		
-		return AI.getBestMove();
+
+		AI.setBoard(kalahBoard);
+		return AI.getBestMove() - 1;
 	}
 	
 	private void execGameOver(Scanner scanner, int winnerIdx)
@@ -261,28 +259,55 @@ public class KalahGameController
 			while (kalahBoard[moveLocation] > 0)
 			{
 				finishIdx = startIdx;
-				if (user == "Human" && finishIdx == 13 || user == "Computer" && finishIdx == 13 || user == "Computer" && finishIdx == 6) 
+				if (user.equals("Human") && finishIdx == 13)
 				{
 					startIdx = 0;
 					continue;
 				}
-				kalahBoard[moveLocation]--;
-				if (kalahBoard[moveLocation] == 0 && kalahBoard[finishIdx] == 0) 
+				else if(user.equals("Computer") && finishIdx == 6) 
 				{
-					int numberOfCaptures = 1;
-					int opponentIdx = 13 - (finishIdx + 1);
-					numberOfCaptures += kalahBoard[opponentIdx];
-					kalahBoard[opponentIdx] = 0;
-					if (user == "Human") 
-					{
-						kalahBoard[6] += numberOfCaptures;
-					}
-					else if (user == "Computer")
-					{
-						kalahBoard[13] += numberOfCaptures;
-					}
+					startIdx = 7;
+					continue;
 				}
-				else 
+				else if(user.equals("Computer") && finishIdx > 13) {
+					startIdx = 0;
+					continue;
+				}
+				kalahBoard[moveLocation]--;
+				if (kalahBoard[moveLocation] == 0 && kalahBoard[finishIdx] == 0 && finishIdx != 13 && finishIdx != 6) 
+				{
+					if((finishIdx < 6 && user.equals("Human")) || (finishIdx > 6 && user.equals("Computer"))) 
+					{
+						int numberOfCaptures = 1;
+						int opponentIdx;
+						opponentIdx = 13 - (finishIdx + 1);
+						if(kalahBoard[opponentIdx] != 0) 
+						{
+							numberOfCaptures += kalahBoard[opponentIdx];
+							kalahBoard[opponentIdx] = 0;
+							if (user == "Human") 
+							{
+								kalahBoard[6] += numberOfCaptures;
+							}
+							else if (user == "Computer")
+							{
+								kalahBoard[13] += numberOfCaptures;
+							}
+						}
+						else 
+						{
+							kalahBoard[startIdx]++;
+							startIdx++;
+						}
+					}
+					else 
+					{
+						kalahBoard[startIdx]++;
+						startIdx++;
+					}
+					
+				}
+				else
 				{
 					kalahBoard[startIdx]++;
 					startIdx++;
@@ -365,17 +390,17 @@ public class KalahGameController
 	
 	public void printTieScreen()
 	{
-		System.out.println("You tied. Press enter to return to the launch screen.");
+		System.out.print("You tied. Press enter to return to the launch screen.");
 	}
 	
 	public void printLoseScreen()
 	{
-		System.out.println("You lose. Press enter to return to the launch screen.");
+		System.out.print("You lose. Press enter to return to the launch screen.");
 	}
 	
 	public void printWinScreen()
 	{
-		System.out.println("You won. Press enter to return to the launch screen.");
+		System.out.print("You won. Press enter to return to the launch screen.");
 	}
 	
 	public void runGame() throws IOException
@@ -419,10 +444,8 @@ public class KalahGameController
 				{
 					printKalahBoard();
 					
-					// TODO(Drew): Get move from the AI
 					int moveLocation = execGetComputerPlay();
-					// bonusTurn = execMakePlay(moveLocation, "Computer");
-					// NOTE(Drew): Remove this!
+					bonusTurn = execMakePlay(moveLocation, "Computer");
 					execCheckIfGameOver();
 					if (isGameOver)
 					{
@@ -431,7 +454,6 @@ public class KalahGameController
 						gameRunning = false;
 						break;
 					}
-					System.out.println("The computer skips its turn.");
 				} while (bonusTurn);
 				humanTurn = true;
 			}
