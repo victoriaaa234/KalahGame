@@ -7,7 +7,7 @@ public class Computer {
 	
 	public Computer() {
 		validMoves = new ArrayList<Integer>();
-	}
+	} 
 	
 	public void setBoard(int[] stateBoard) {
 		board = stateBoard;

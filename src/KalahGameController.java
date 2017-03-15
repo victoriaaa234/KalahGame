@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -8,11 +9,12 @@ public class KalahGameController
 	private int[] kalahBoard;
 	private Boolean isGameOver;
 	private Computer AI;
+	private Scanner scanner;
 	
-	public KalahGameController()
+	public KalahGameController(Scanner scan)
 	{		
 		kalahBoard = new int[14];
-		
+
 		kalahBoard[0] = 4;
 		kalahBoard[1] = 4;
 		kalahBoard[2] = 4;
@@ -33,24 +35,13 @@ public class KalahGameController
 		
 		isGameOver = false;
 		AI = new Computer();
-
+		scanner = scan;
 	}
 	
 	// If human wins, return 0. If computer wins, return 1. If a tie, return 2.
 	private int execCalcWinner()
 	{
 		int winnerIdx;
-		
-		for (int i = 0; i < 6; ++i)
-		{
-			kalahBoard[6] += kalahBoard[i];
-			kalahBoard[i] = 0;
-		}
-		for (int i = 7; i < 13; ++i)
-		{
-			kalahBoard[13] += kalahBoard[i];
-			kalahBoard[i] = 0;
-		}
 		
 		if (kalahBoard[6] > kalahBoard[13])
 		{
@@ -65,6 +56,15 @@ public class KalahGameController
 			winnerIdx = 2;
 		}
 		
+		for (int i = 0; i < 6; ++i) 
+		{
+			kalahBoard[i] = 0;
+		}
+		
+		for (int i = 7; i < 13; ++i) 
+		{
+			kalahBoard[i] = 0;
+		}
 		printKalahBoard();
 		
 		return winnerIdx;
@@ -72,30 +72,43 @@ public class KalahGameController
 	
 	private void execCheckIfGameOver()
 	{
-		Boolean gameOver = true;
+		// If one player's board is empty, then the other player takes the leftover pieces on their own side of the board.
+		Boolean gameOverHuman = true;
+		Boolean gameOverAI = true;
 		
 		for (int i = 0; i < 6; ++i)
 		{
 			if (kalahBoard[i] > 0)
 			{
-				gameOver = false;
+				gameOverHuman = false;
 				break;
 			}
 		}
 		
-		if (!gameOver)
+		for (int i = 7; i < 13; ++i)
 		{
-			for (int i = 7; i < 13; ++i)
+			if (kalahBoard[i] > 0)
 			{
-				if (kalahBoard[i] > 0)
-				{
-					gameOver = false;
-					break;
-				}
+				gameOverAI = false;
+				break;
 			}
 		}
 		
-		isGameOver = gameOver;
+		if(gameOverAI) 
+		{
+			for (int i = 0; i < 6; ++i) 
+			{
+				kalahBoard[6] += kalahBoard[i];
+			}
+		}
+		else if(gameOverHuman) 
+		{
+			for (int i = 7; i < 13; ++i) 
+			{
+				kalahBoard[13] += kalahBoard[i];
+			}
+		}
+		isGameOver = gameOverAI || gameOverHuman;
 	}
 	
 	// Returns true if player goes first
@@ -130,7 +143,7 @@ public class KalahGameController
 			}
 			else
 			{
-				System.out.print(" you get the first for being closest.");
+				System.out.println(" you get the first for being closest.");
 				result = true;
 			}
 		}
@@ -248,15 +261,35 @@ public class KalahGameController
 			while (kalahBoard[moveLocation] > 0)
 			{
 				finishIdx = startIdx;
-				if(user == "Human" && finishIdx == 13 || user == "Computer" && finishIdx == 6) {
+				if (user == "Human" && finishIdx == 13 || user == "Computer" && finishIdx == 13 || user == "Computer" && finishIdx == 6) 
+				{
 					startIdx = 0;
 					continue;
 				}
 				kalahBoard[moveLocation]--;
-				kalahBoard[startIdx]++;
-				startIdx++;
+				if (kalahBoard[moveLocation] == 0 && kalahBoard[finishIdx] == 0) 
+				{
+					int numberOfCaptures = 1;
+					int opponentIdx = 13 - (finishIdx + 1);
+					numberOfCaptures += kalahBoard[opponentIdx];
+					kalahBoard[opponentIdx] = 0;
+					if (user == "Human") 
+					{
+						kalahBoard[6] += numberOfCaptures;
+					}
+					else if (user == "Computer")
+					{
+						kalahBoard[13] += numberOfCaptures;
+					}
+				}
+				else 
+				{
+					kalahBoard[startIdx]++;
+					startIdx++;
+				}
 			}
 			
+
 			if ((finishIdx == 6 && moveLocation < 6) || (finishIdx == 13 && moveLocation > 6))
 			{
 				System.out.println("Player earned a second turn!");
@@ -332,23 +365,21 @@ public class KalahGameController
 	
 	public void printTieScreen()
 	{
-		System.out.print("You tied. Press enter to return to the launch screen.");
+		System.out.println("You tied. Press enter to return to the launch screen.");
 	}
 	
 	public void printLoseScreen()
 	{
-		System.out.print("You lose. Press enter to return to the launch screen.");
+		System.out.println("You lose. Press enter to return to the launch screen.");
 	}
 	
 	public void printWinScreen()
 	{
-		System.out.print("You won. Press enter to return to the launch screen.");
+		System.out.println("You won. Press enter to return to the launch screen.");
 	}
 	
 	public void runGame() throws IOException
-	{
-		Scanner scanner = new Scanner(System.in);
-		
+	{		
 		execLaunchScreen(scanner);
 		
 		Boolean humanGoesFirst = execFindFirstPlayer(scanner, AI.randomMoveSelect());
@@ -371,6 +402,14 @@ public class KalahGameController
 					
 					int moveLocation = execGetHumanPlay(scanner);
 					bonusTurn = execMakePlay(moveLocation, "Human");
+					execCheckIfGameOver();
+					if (isGameOver)
+					{
+						int winnerIdx = execCalcWinner();
+						execGameOver(scanner, winnerIdx);
+						gameRunning = false;
+						break;
+					}
 				} while (bonusTurn);
 				humanTurn = false;
 			}
@@ -384,20 +423,18 @@ public class KalahGameController
 					int moveLocation = execGetComputerPlay();
 					// bonusTurn = execMakePlay(moveLocation, "Computer");
 					// NOTE(Drew): Remove this!
+					execCheckIfGameOver();
+					if (isGameOver)
+					{
+						int winnerIdx = execCalcWinner();
+						execGameOver(scanner, winnerIdx);
+						gameRunning = false;
+						break;
+					}
 					System.out.println("The computer skips its turn.");
 				} while (bonusTurn);
 				humanTurn = true;
 			}
-			
-			execCheckIfGameOver();
-			if (isGameOver)
-			{
-				int winnerIdx = execCalcWinner();
-				execGameOver(scanner, winnerIdx);
-				gameRunning = false;
-			}
 		}
-		
-		scanner.close();
 	}
 }
