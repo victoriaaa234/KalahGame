@@ -10,6 +10,8 @@ public class KalahGameController
 	private Boolean isGameOver;
 	private Computer AI;
 	private Scanner scanner;
+	private Node minimaxTree;
+	private Node iteratorNode;
 	
 	public KalahGameController(Scanner scan)
 	{		
@@ -34,7 +36,9 @@ public class KalahGameController
 		kalahBoard[13] = 0;
 		
 		isGameOver = false;
-		AI = new Computer();
+		minimaxTree = new Node(kalahBoard, -1);
+		AI = new Computer(minimaxTree);
+		iteratorNode = minimaxTree;
 		scanner = scan;
 	}
 	
@@ -212,11 +216,9 @@ public class KalahGameController
 	private int execGetComputerPlay()
 	{
 		// Computer needs current state of the board to decide next move
-		
-		// TODO(Drew): Should we check the validity of the computer move?
-
-		AI.setBoard(kalahBoard);
-		return AI.getBestMove() - 1;
+		Node currentNode = AI.setBoard(kalahBoard, iteratorNode);
+		iteratorNode = currentNode;
+		return AI.min() - 1;
 	}
 	
 	private void execGameOver(Scanner scanner, int winnerIdx)
