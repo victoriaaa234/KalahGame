@@ -250,7 +250,7 @@ public class KalahGame
 	{
 		int opponentIdx = (playerIdx + 1) % 2;
 		
-		boolean result = endZoneIdx[playerIdx] < endZoneIdx[opponentIdx];
+		boolean result = kalahBoard[endZoneIdx[playerIdx]] < kalahBoard[endZoneIdx[opponentIdx]];
 		
 		return result;
 	}
@@ -259,8 +259,8 @@ public class KalahGame
 	{
 		int opponentIdx = (playerIdx + 1) % 2;
 		
-		boolean result = endZoneIdx[playerIdx] > endZoneIdx[opponentIdx];
-		
+		boolean result = kalahBoard[endZoneIdx[playerIdx]] > kalahBoard[endZoneIdx[opponentIdx]];
+
 		return result;
 	}
 	
