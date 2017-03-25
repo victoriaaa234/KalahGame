@@ -17,7 +17,7 @@ public class KalahGameServer
 	{
 		int numHouses = 6;
 		int numSeedsPerHouse = 4;
-		long timeoutInMs = 5000;
+		long timeoutInMs = 30000;
 		boolean randomizeLayout = false;
 		
 		System.out.println("Kalah server is running.");
