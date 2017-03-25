@@ -77,14 +77,20 @@ public class KalahGame
 				{
 					if (finishIdx == endZoneIdx[0])
 					{
-						bonusMove = true;
+						if (!isSideEmpty(0))
+						{
+							bonusMove = true;
+						}
 					}
 				}
 				else if (playerIdx == 1)
 				{
 					if (finishIdx == endZoneIdx[1])
 					{
-						bonusMove = true;
+						if (!isSideEmpty(1))
+						{
+							bonusMove = true;
+						}
 					}
 				}
 				
@@ -106,7 +112,7 @@ public class KalahGame
 						if (finishIdx > endZoneIdx[0] && finishIdx != endZoneIdx[1])
 						{
 							System.out.println("DEBUG -- Executing war!");
-							int opponentIdx = (finishIdx - endZoneIdx[0]) * 2 + finishIdx;
+							int opponentIdx = finishIdx - (finishIdx - endZoneIdx[0]) * 2;
 							kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx];
 							kalahBoard[opponentIdx] = 0;
 						}
@@ -213,25 +219,8 @@ public class KalahGame
 	{
 		boolean result = true;
 
-		boolean playerSideEmpty = true;
-		for (int i = 0; i < endZoneIdx[0]; ++i)
-		{
-			if (kalahBoard[i] > 0)
-			{
-				playerSideEmpty = false;
-				break;
-			}
-		}
-
-		boolean opponentSideEmpty = true;
-		for (int i = endZoneIdx[0] + 1; i < endZoneIdx[1]; ++i)
-		{
-			if (kalahBoard[i] > 0)
-			{
-				opponentSideEmpty = false;
-				break;
-			}
-		}
+		boolean playerSideEmpty = isSideEmpty(0);
+		boolean opponentSideEmpty = isSideEmpty(1);
 		
 		result = playerSideEmpty || opponentSideEmpty;
 		
@@ -273,6 +262,23 @@ public class KalahGame
 		boolean result = endZoneIdx[playerIdx] > endZoneIdx[opponentIdx];
 		
 		return result;
+	}
+	
+	private boolean isSideEmpty(int playerIdx)
+	{
+		boolean isEmpty = true;
+		
+		int i = (playerIdx == 0) ? 0 : endZoneIdx[0] + 1;
+		for (; i < endZoneIdx[playerIdx]; ++i)
+		{
+			if (kalahBoard[i] > 0)
+			{
+				isEmpty = false;
+				break;
+			}
+		}
+		
+		return isEmpty;
 	}
 		
 	public boolean isTied()
