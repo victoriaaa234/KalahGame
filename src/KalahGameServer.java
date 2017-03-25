@@ -17,7 +17,7 @@ public class KalahGameServer
 	{
 		int numHouses = 6;
 		int numSeedsPerHouse = 4;
-		int timeoutInMs = 5000;
+		long timeoutInMs = 5000;
 		boolean randomizeLayout = false;
 		
 		System.out.println("Kalah server is running.");
@@ -27,7 +27,7 @@ public class KalahGameServer
 			System.out.println("Kalah server is running with default settings.");
 			System.out.println("You can specify a settings file as an arugment to this program.");
 			System.out.println("Settings are in the format:");
-			System.out.println("<int for holes per side> <int for seeds per side> <long int for time> <S | R>");
+			System.out.println("<int for holes per side> <int for seeds per hole> <long int for timeout> <S | R>");
 		}
 		else
 		{
@@ -43,6 +43,27 @@ public class KalahGameServer
 					numHouses = Integer.parseInt(settings[0]);
 					numSeedsPerHouse = Integer.parseInt(settings[1]);
 					timeoutInMs = Integer.parseInt(settings[2]);
+					
+					if (numHouses < 4 || numHouses > 9)
+					{
+						System.out.println("The number of holes per side must be between 4 and 9, inclusive.");
+						System.out.println("Closing...");
+						System.exit(1);
+					}
+					
+					if (numSeedsPerHouse < 1 || numSeedsPerHouse > 10)
+					{
+						System.out.println("The number of seeds per hole must be between 1 and 10, inclusive.");
+						System.out.println("Closing...");
+						System.exit(1);
+					}
+					
+					if (timeoutInMs < 1)
+					{
+						System.out.println("Timeout must be a positive real number.");
+						System.out.println("Closing...");
+						System.exit(1);
+					}
 					
 					if (settings[3].equals("R"))
 					{
@@ -300,12 +321,12 @@ class KalahGameServerLogic
 		
 		private String infoString;
 		private boolean needsAck;
-		private int numMsPerMove;
+		private long numMsPerMove;
 		
 		TimerTask timeoutTask;
 		Timer timer;
 		
-		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, int numMsPerMove, boolean goesFirst)
+		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, long numMsPerMove, boolean goesFirst)
 		{
 			this.socket = socket;
 			this.numMsPerMove = numMsPerMove;
@@ -329,7 +350,7 @@ class KalahGameServerLogic
 			}
 		}
 		
-		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, int numMsPerMove, boolean goesFirst, String randomValuesAsStr)
+		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, long numMsPerMove, boolean goesFirst, String randomValuesAsStr)
 		{
 			this.socket = socket;
 			this.numMsPerMove = numMsPerMove;
