@@ -10,7 +10,7 @@ public class Computer
 	private int[] board;
 	Map<Integer, int[]> validMoves;
 	Node minimaxTree;
-	
+
 	public Computer(Node minimax)
 	{
 		validMoves = new HashMap<Integer, int[]>();
@@ -18,14 +18,14 @@ public class Computer
 		board = minimax.getBoard();
 		insertBoard(minimax);
 	}
-	
-	public Node setBoard(int[] currentBoard, Node parent) 
+
+	public Node setBoard(int[] currentBoard, Node parent)
 	{
 		board = currentBoard;
 		Node nextNode;
-		for(int i = 0; i < parent.getChildren().size(); ++i) 
+		for(int i = 0; i < parent.getChildren().size(); ++i)
 		{
-			if(parent.getChildren().get(i).getBoard() == currentBoard) 
+			if(parent.getChildren().get(i).getBoard() == currentBoard)
 			{
 				int[] selectBoard  = parent.getChildren().get(i).getBoard();
 				int selectMove = parent.getChildren().get(i).getMove();
@@ -36,20 +36,20 @@ public class Computer
 		}
 		return new Node();
 	}
-	
+
 	public Map<Integer, int[]> getAllValidMoves()
 	{
 		// Get all possible moves from current board state for AI
 		// TODO
 		return validMoves;
 	}
-	
-	public void insertBoard(Node parent) 
+
+	public void insertBoard(Node parent)
 	{
 		Map<Integer, int[]> moves = getAllValidMoves();
 		ArrayList<Node> children = parent.getChildren();
 		Iterator it = moves.entrySet().iterator();
-		while(it.hasNext()) 
+		while(it.hasNext())
 		{
 			Map.Entry pair = (Map.Entry)it.next();
 			int[] stateBoard = (int[]) pair.getValue();
@@ -59,12 +59,12 @@ public class Computer
 		}
 		parent.setChildren(children);
 	}
-	
+
 	public int min()
 	{
 		ArrayList<Integer> moveLocations = new ArrayList<Integer>();
 
-		for (Integer i = 7; i < 13; ++i) 
+		for (Integer i = 7; i < 13; ++i)
 		{
 			Node node = new Node(board, i);
 			moveLocations.add(node.utility());
@@ -72,11 +72,11 @@ public class Computer
 			System.out.println("For: " + newI + " " + node.utility());
 		}
 		int minimum = moveLocations.indexOf(Collections.min(moveLocations));
-		if (moveLocations.get(minimum) == 0) 
+		if (moveLocations.get(minimum) == 0)
 		{
-			for (int i = 0; i < moveLocations.size(); ++i) 
+			for (int i = 0; i < moveLocations.size(); ++i)
 			{
-				if (moveLocations.get(i) > 0) 
+				if (moveLocations.get(i) > 0)
 				{
 					minimum = i;
 					break;
@@ -88,7 +88,7 @@ public class Computer
 		moveLocations.clear();
 		return minimum;
 	}
-	
+
 	public int randomMoveSelect()
 	{
 		Random randGen = new Random();

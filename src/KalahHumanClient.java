@@ -19,183 +19,183 @@ import javax.swing.SwingConstants;
 public class KalahHumanClient
 {
 	private KalahGame kalahGame;
-	
+
 	private BufferedReader input;
 	private PrintWriter output;
-	
+
 	private JFrame frame;
 	private ArrayList<KalahPitButton> playerSideHouses;
 	private ArrayList<KalahPitButton> opponentSideHouses;
 	private KalahPitButton playerEndZone;
 	private KalahPitButton opponentEndZone;
-	
+
 	private boolean needsAck;
 	private boolean needsInfo;
 	private boolean madeFirstMove;
 	private String moveString;
 	private boolean playerTurn;
-	
+
 	public static void main(String[] args) throws Exception
 	{
 		KalahHumanClient client = new KalahHumanClient();
 		client.run();
     }
-	
+
 	public KalahHumanClient()
 	{
 		playerSideHouses = new ArrayList<KalahPitButton>();
 		opponentSideHouses = new ArrayList<KalahPitButton>();
-		
+
 		frame = new JFrame("Kalah User Interface - Team 23");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
 		frame.setSize(900, 400);
-		
+
 		drawStartScreen();
-		
+
 		frame.setVisible(true);
-		
+
 		needsAck = false;
 		needsInfo = false;
 		playerTurn = false;
 		madeFirstMove = false;
-		
+
 		moveString = "";
 	}
-	
+
 	private void drawConnectingScreen()
 	{
 		frame.getContentPane().removeAll();
-		
+
 		JLabel connectingLabel = new JLabel("Connecting to server...", JLabel.CENTER);
 		connectingLabel.setBounds(0, 100, 900, 40);
 		connectingLabel.setFont(new Font("Lucidia Grande", Font.BOLD, 24));
-		
+
 		frame.getContentPane().add(connectingLabel);
-		
+
 		frame.getContentPane().revalidate();
 		frame.getContentPane().repaint();
 	}
-	
+
 	private void drawConnectionFailedScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "Couldn't find a server at the given address.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawGameBoardScreen()
 	{
 		frame.getContentPane().removeAll();
-		
+
 		String playerTurnStr = playerTurn ? "Your Turn" : "Opponent Turn";
 		JLabel playerTurnLabel = new JLabel(playerTurnStr, JLabel.CENTER);
 		playerTurnLabel.setBounds(0, 80, 900, 40);
-		
+
 		for (int i = 0; i < playerSideHouses.size(); ++i)
 		{
 			KalahPitButton playerSideHouse = playerSideHouses.get(i);
 			playerSideHouse.setText(kalahGame.getSeedCountAtMy(i) + "");
 			frame.getContentPane().add(playerSideHouse);
-			
+
 			KalahPitButton opponentSideHouse = opponentSideHouses.get(i);
 			opponentSideHouse.setText(kalahGame.getSeedCountAtOpponent(i) + "");
 			frame.getContentPane().add(opponentSideHouse);
 		}
-		
+
 		playerEndZone.setText(kalahGame.getSeedCountInMyPit() + "");
 		opponentEndZone.setText(kalahGame.getSeedCountInOpponentPit() + "");
-		
+
 		frame.getContentPane().add(playerTurnLabel);
 		frame.getContentPane().add(playerEndZone);
 		frame.getContentPane().add(opponentEndZone);
-		
+
 		frame.getContentPane().revalidate();
 		frame.getContentPane().repaint();
 	}
-	
+
 	private void drawIllegalMoveScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have made an illegal move and lost Kalah!", "Illegal Move", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawLoseScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have lost Kalah!", "Loser", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawLostConnectionScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have lost connection to the game server.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawStartScreen()
 	{
 		frame.getContentPane().removeAll();
-		
+
 		JLabel titleLabel = new JLabel("Kalah", JLabel.CENTER);
 		titleLabel.setBounds(0, 30, 900, 40);
 		titleLabel.setFont(new Font("Lucidia Grande", Font.BOLD, 24));
-		
+
 		JLabel teamLabel = new JLabel("Team 23", JLabel.CENTER);
 		teamLabel.setBounds(0, 50, 900, 50);
-		
+
 		frame.getContentPane().add(titleLabel);
 		frame.getContentPane().add(teamLabel);
-		
+
 		frame.getContentPane().revalidate();
 		frame.getContentPane().repaint();
 	}
-	
+
 	private void drawTieScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have tied at Kalah!", "Draw", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawTimedOutScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You took to long to make a move and lost Kalah!", "Timeout", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private void drawWaitingForConnectScreen()
 	{
 		frame.getContentPane().removeAll();
-		
+
 		JLabel connectingLabel = new JLabel("Waiting for opponent to connect...", JLabel.CENTER);
 		connectingLabel.setBounds(0, 100, 900, 40);
 		connectingLabel.setFont(new Font("Lucidia Grande", Font.BOLD, 24));
-		
+
 		frame.getContentPane().add(connectingLabel);
-		
+
 		frame.getContentPane().revalidate();
 		frame.getContentPane().repaint();
 	}
-		
+
 	private void drawWinScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have won Kalah!", "Winner", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private int getPieRuleReponse()
 	{
 		Object[] options = { "Swap Sides", "Play Normally" };
 	    return JOptionPane.showOptionDialog(frame, "Would you like to change sides with your opponent\nor continue play as normal?", "Pie Rule", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
-	
+
 	private String getServerAddress()
 	{
 		return JOptionPane.showInputDialog(frame, "Enter IP Address of the Server:", "Welcome to Kalah", JOptionPane.QUESTION_MESSAGE);
 	}
-	
+
 	private void gotInfoMessage(String message)
 	{
 		String[] infoMessageParts = message.split(" ");
-		
+
 		if (infoMessageParts[0].equals("INFO"))
 		{
 			try
@@ -205,7 +205,7 @@ public class KalahHumanClient
 				int timeoutInMs = Integer.parseInt(infoMessageParts[3]);
 				String goesFirstStr = infoMessageParts[4];
 				String standardLayoutStr = infoMessageParts[5];
-				
+
 				if (goesFirstStr.equals("F"))
 				{
 					playerTurn = true;
@@ -222,7 +222,7 @@ public class KalahHumanClient
 					System.out.println("Closing...");
 					System.exit(1);
 				}
-				
+
 				if (standardLayoutStr.equals("S"))
 				{
 					kalahGame = new KalahGame(houseCount, seedCount);
@@ -234,7 +234,7 @@ public class KalahHumanClient
 					{
 						rawValues[i] = Integer.parseInt(infoMessageParts[i + 6]);
 					}
-					
+
 					kalahGame = new KalahGame(houseCount, rawValues);
 				}
 				else
@@ -243,21 +243,21 @@ public class KalahHumanClient
 					System.out.println("Closing...");
 					System.exit(1);
 				}
-				
+
 				int buttonSize = (frame.getWidth() - 35 - (houseCount * 5)) / (houseCount + 2);
-				
+
 				opponentEndZone = new KalahPitButton();
 				opponentEndZone.setBounds(15, 110, buttonSize, 255);
 				opponentEndZone.setHorizontalAlignment(SwingConstants.CENTER);
 				opponentEndZone.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
 				opponentEndZone.setIndex(0);
-				
+
 				playerEndZone = new KalahPitButton();
 				playerEndZone.setBounds(frame.getWidth() - 15 - buttonSize, 110, buttonSize, 255);
 				playerEndZone.setHorizontalAlignment(SwingConstants.CENTER);
 				playerEndZone.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
 				playerEndZone.setIndex(0);
-				
+
 				for (int i = 0; i < houseCount; ++i)
 				{
 					KalahPitButton myHouse = new KalahPitButton();
@@ -265,19 +265,19 @@ public class KalahHumanClient
 					myHouse.setHorizontalAlignment(SwingConstants.CENTER);
 					myHouse.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
 					myHouse.setIndex(i);
-					
+
 					myHouse.addActionListener(new ActionListener()
 					{
 						@Override
 						public void actionPerformed(ActionEvent e)
 						{
-							
+
 							kalahButtonPressed((KalahPitButton)(e.getSource()));
 						}
 					});
-					
+
 					playerSideHouses.add(myHouse);
-					
+
 					KalahPitButton otherHouse = new KalahPitButton();
 					otherHouse.setBounds(frame.getWidth() - 15 - (i + 1) * 5 - ((i + 2) * buttonSize), 110, buttonSize, 115);
 					otherHouse.setHorizontalAlignment(SwingConstants.CENTER);
@@ -298,30 +298,30 @@ public class KalahHumanClient
 			System.out.println("Closing...");
 			System.exit(1);
 		}
-		
+
 		writeToServer("READY");
 	}
-	
+
 	private void gotOpponentMove(String moves)
 	{
 		writeToServer("OK");
-		
+
 		String[] indexes = moves.split(" ");
-		
+
 		for (int i = 0; i < indexes.length; ++i)
 		{
 			kalahGame.executeMove(Integer.parseInt(indexes[i]), 1);
 		}
-		
+
 		playerTurn = true;
-		
+
 		drawGameBoardScreen();
-		
+
 		if (!madeFirstMove)
 		{
 			int response = getPieRuleReponse();
 			System.out.println("DEBUG -- Pie rule response: " + response);
-			
+
 			if (response == 0)
 			{
 				writeToServer("P");
@@ -333,26 +333,26 @@ public class KalahHumanClient
 			}
 		}
 	}
-	
+
 	private boolean gotPlayerMove(int move)
 	{
 		int result = kalahGame.executeMove(move, 0);
 		boolean bonusMove = (result == 1);
-		
+
 		playerTurn = bonusMove;
 		drawGameBoardScreen();
-		
+
 		return bonusMove;
 	}
-	
+
 	private void kalahButtonPressed(KalahPitButton source)
 	{
 		if (playerTurn)
 		{
 			int idx = source.getIndex();
-			
+
 			boolean bonusMove = gotPlayerMove(idx);
-			
+
 			if (moveString.length() > 0)
 			{
 				moveString += " " + idx;
@@ -361,7 +361,7 @@ public class KalahHumanClient
 			{
 				moveString += idx;
 			}
-			
+
 			if (!bonusMove)
 			{
 				writeToServer(moveString);
@@ -372,14 +372,14 @@ public class KalahHumanClient
 			}
 		}
 	}
-	
+
 	private String readFromServer() throws IOException
 	{
 		String result = input.readLine();
 		System.out.println("DEBUG -- Read from server: " + result);
 		return result;
 	}
-	
+
 	private void run() throws IOException
 	{
 		String serverAddress = getServerAddress();
@@ -403,16 +403,16 @@ public class KalahHumanClient
 			}
 
 			drawConnectingScreen();
-			
+
 			while (true)
 			{
 				String line = readFromServer();
 				if (line == null)
 				{
 					System.out.println("DEBUG -- Lost connection to server.");
-					
+
 					drawLostConnectionScreen();
-					
+
 					System.out.println("Closing...");
 					System.exit(1);
 				}
@@ -462,47 +462,47 @@ public class KalahHumanClient
 				else if (line.startsWith("WINNER"))
 				{
 					System.out.println("DEBUG -- Player won.");
-					
+
 					// NOTE(Drew): This just updates the game so we can update the GUI.
 					kalahGame.hasWinner();
 					drawGameBoardScreen();
-					
+
 					drawWinScreen();
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 				}
 				else if (line.startsWith("LOSER"))
 				{
 					System.out.println("DEBUG -- Player lost.");
-					
+
 					// NOTE(Drew): This just updates the game so we can update the GUI.
 					kalahGame.hasWinner();
 					drawGameBoardScreen();
-					
+
 					drawLoseScreen();
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 				}
 				else if (line.startsWith("TIE"))
 				{
 					System.out.println("DEBUG -- Player tied");
-					
+
 					// NOTE(Drew): This just updates the game so we can update the GUI.
 					kalahGame.hasWinner();
 					drawGameBoardScreen();
-					
+
 					drawTieScreen();
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 				}
 				else if (line.startsWith("ILLEGAL"))
 				{
 					System.out.println("DEBUG -- Illegal move.");
-					
+
 					drawIllegalMoveScreen();
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 				}
 				else if (line.startsWith("TIMEOUT"))
 				{
 					System.out.println("DEBUG -- Player took too long and timed out.");
-					
+
 					drawTimedOutScreen();
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 				}
@@ -528,7 +528,7 @@ public class KalahHumanClient
 			System.exit(1);
 		}
 	}
-	
+
 	private void writeToServer(String message)
 	{
 		System.out.println("DEBUG -- Writing to server: " + message);

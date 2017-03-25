@@ -8,32 +8,32 @@ public class KalahPitButton extends JButton
 	private boolean isEndZone;
 	private int index;
 	private boolean isPlayerPit;
-	
+
 	int getIndex()
 	{
 		return index;
 	}
-	
+
 	boolean getIsEndZone()
 	{
 		return isEndZone;
 	}
-	
+
 	boolean getIsPlayerPit()
 	{
 		return isPlayerPit;
 	}
-	
+
 	void setIndex(int index)
 	{
 		this.index = index;
 	}
-	
+
 	void setIsEndZone(boolean isEndZone)
 	{
 		this.isEndZone = isEndZone;
 	}
-	
+
 	void setIsPlayerPit(boolean isPlayerPit)
 	{
 		this.isPlayerPit = isPlayerPit;

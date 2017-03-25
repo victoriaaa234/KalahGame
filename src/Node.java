@@ -1,46 +1,46 @@
 import java.util.ArrayList;
 
-public class Node 
+public class Node
 {
 	private int[] currentBoard;
 	private int currentMove;
 	private ArrayList<Node> children;
-	
-	public Node() 
+
+	public Node()
 	{
 		children = new ArrayList<Node>();
 	}
-	
-	public Node(int[] stateBoard, int move) 
+
+	public Node(int[] stateBoard, int move)
 	{
 		currentBoard = stateBoard;
 		currentMove = move;
 		children = new ArrayList<Node>();
 	}
-	
-	public int[] getBoard() 
+
+	public int[] getBoard()
 	{
 		return currentBoard;
 	}
-	
-	public int getMove() 
+
+	public int getMove()
 	{
 		return currentMove;
 	}
-	
-	public ArrayList<Node> getChildren() 
+
+	public ArrayList<Node> getChildren()
 	{
 		return children;
 	}
-	
+
 	public void setChildren(ArrayList<Node> child) {
 		children = child;
 	}
-	
-	public int utility() 
+
+	public int utility()
 	{
 		int score = 0;
-		if(children.isEmpty()) 
+		if(children.isEmpty())
 		{
 			// Terminal node
 			int numberOfMoves = currentBoard[currentMove];
@@ -48,43 +48,43 @@ public class Node
 			Boolean steal = false;
 			int stealSeeds = 0;
 			int iteratorMoves = numberOfMoves;
-			while(iteratorMoves != 0) 
+			while(iteratorMoves != 0)
 			{
 				int nextMove = ++iteratorMove;
-				if(nextMove == 13 && ((currentMove + numberOfMoves)%13 != 0)) 
+				if(nextMove == 13 && ((currentMove + numberOfMoves)%13 != 0))
 				{
 					score = score - 7;
 					iteratorMove = -1;
 				}
-				else if(nextMove == 6) 
+				else if(nextMove == 6)
 				{
 					iteratorMove = 6;
 					continue;
 				}
-				else if(nextMove > 6 && nextMove < 13) 
+				else if(nextMove > 6 && nextMove < 13)
 				{
 					score--;
-					if(iteratorMoves == 1 && currentBoard[nextMove] == 0) 
+					if(iteratorMoves == 1 && currentBoard[nextMove] == 0)
 					{
 						steal = true;
 						stealSeeds = currentBoard[13 - (nextMove + 1)];
-						if(stealSeeds != 0) 
+						if(stealSeeds != 0)
 						{
 							stealSeeds ++;
 						}
 					}
 				}
-				else if(nextMove < 6) 
+				else if(nextMove < 6)
 				{
 					score++;
 				}
 				iteratorMoves--;
 			}
-			if(((currentMove + numberOfMoves)%13 == 0)) 
+			if(((currentMove + numberOfMoves)%13 == 0))
 			{
 				score = score - 15;
 			}
-			else if(steal && stealSeeds != 0) 
+			else if(steal && stealSeeds != 0)
 			{
 				score = score - 10;
 			}
