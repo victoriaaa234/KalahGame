@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -74,6 +75,12 @@ public class KalahHumanClient
 		
 		frame.getContentPane().revalidate();
 		frame.getContentPane().repaint();
+	}
+	
+	private void drawConnectionFailedScreen()
+	{
+		Object[] options = { "OK" };
+	    JOptionPane.showOptionDialog(frame, "Couldn't find a server at the given address.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 	
 	private void drawGameBoardScreen()
@@ -386,9 +393,13 @@ public class KalahHumanClient
 			}
 			catch (ConnectException e)
 			{
-				System.out.println("Couldn't connect to server.");
-				System.out.println("Quitting...");
-				System.exit(1);
+				drawConnectionFailedScreen();
+				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+			}
+			catch (UnknownHostException e)
+			{
+				drawConnectionFailedScreen();
+				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 
 			drawConnectingScreen();
