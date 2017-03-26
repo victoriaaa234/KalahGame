@@ -2,12 +2,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ConnectException;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -16,32 +12,27 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 
-public class KalahHumanClient
+public class KalahClientHuman extends KalahClient
 {
-	private KalahGame kalahGame;
+	protected JFrame frame;
+	protected ArrayList<KalahPitButton> playerSideHouses;
+	protected ArrayList<KalahPitButton> opponentSideHouses;
+	protected KalahPitButton playerEndZone;
+	protected KalahPitButton opponentEndZone;
 
-	private BufferedReader input;
-	private PrintWriter output;
-
-	private JFrame frame;
-	private ArrayList<KalahPitButton> playerSideHouses;
-	private ArrayList<KalahPitButton> opponentSideHouses;
-	private KalahPitButton playerEndZone;
-	private KalahPitButton opponentEndZone;
-
-	private boolean needsAck;
-	private boolean needsInfo;
-	private boolean madeFirstMove;
-	private String moveString;
-	private boolean playerTurn;
+	protected boolean needsAck;
+	protected boolean needsInfo;
+	protected boolean madeFirstMove;
+	protected String moveString;
+	protected boolean playerTurn;
 
 	public static void main(String[] args) throws Exception
 	{
-		KalahHumanClient client = new KalahHumanClient();
+		KalahClientHuman client = new KalahClientHuman();
 		client.run();
     }
 
-	public KalahHumanClient()
+	public KalahClientHuman()
 	{
 		playerSideHouses = new ArrayList<KalahPitButton>();
 		opponentSideHouses = new ArrayList<KalahPitButton>();
@@ -63,7 +54,7 @@ public class KalahHumanClient
 		moveString = "";
 	}
 
-	private void drawConnectingScreen()
+	protected void drawConnectingScreen()
 	{
 		frame.getContentPane().removeAll();
 
@@ -77,13 +68,13 @@ public class KalahHumanClient
 		frame.getContentPane().repaint();
 	}
 
-	private void drawConnectionFailedScreen()
+	protected void drawConnectionFailedScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "Couldn't find a server at the given address.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawGameBoardScreen()
+	protected void drawGameBoardScreen()
 	{
 		frame.getContentPane().removeAll();
 
@@ -113,25 +104,25 @@ public class KalahHumanClient
 		frame.getContentPane().repaint();
 	}
 
-	private void drawIllegalMoveScreen()
+	protected void drawIllegalMoveScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have made an illegal move and lost Kalah!", "Illegal Move", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawLoseScreen()
+	protected void drawLoseScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have lost Kalah!", "Loser", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawLostConnectionScreen()
+	protected void drawLostConnectionScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have lost connection to the game server.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawStartScreen()
+	protected void drawStartScreen()
 	{
 		frame.getContentPane().removeAll();
 
@@ -149,19 +140,19 @@ public class KalahHumanClient
 		frame.getContentPane().repaint();
 	}
 
-	private void drawTieScreen()
+	protected void drawTieScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have tied at Kalah!", "Draw", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawTimedOutScreen()
+	protected void drawTimedOutScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You took to long to make a move and lost Kalah!", "Timeout", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private void drawWaitingForConnectScreen()
+	protected void drawWaitingForConnectScreen()
 	{
 		frame.getContentPane().removeAll();
 
@@ -175,24 +166,24 @@ public class KalahHumanClient
 		frame.getContentPane().repaint();
 	}
 
-	private void drawWinScreen()
+	protected void drawWinScreen()
 	{
 		Object[] options = { "OK" };
 	    JOptionPane.showOptionDialog(frame, "You have won Kalah!", "Winner", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private int getPieRuleReponse()
+	protected int getPieRuleResponse()
 	{
 		Object[] options = { "Swap Sides", "Play Normally" };
 	    return JOptionPane.showOptionDialog(frame, "Would you like to change sides with your opponent\nor continue play as normal?", "Pie Rule", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
-	private String getServerAddress()
+	protected String getServerAddress()
 	{
 		return JOptionPane.showInputDialog(frame, "Enter IP Address of the Server:", "Welcome to Kalah", JOptionPane.QUESTION_MESSAGE);
 	}
 
-	private void gotInfoMessage(String message)
+	protected void gotInfoMessage(String message)
 	{
 		String[] infoMessageParts = message.split(" ");
 
@@ -302,16 +293,9 @@ public class KalahHumanClient
 		writeToServer("READY");
 	}
 
-	private void gotOpponentMove(String moves)
+	protected void gotOpponentMove(String moves)
 	{
-		writeToServer("OK");
-
-		String[] indexes = moves.split(" ");
-
-		for (int i = 0; i < indexes.length; ++i)
-		{
-			kalahGame.executeMove(Integer.parseInt(indexes[i]), 1);
-		}
+		super.gotOpponentMove(moves);
 
 		playerTurn = true;
 
@@ -319,7 +303,7 @@ public class KalahHumanClient
 
 		if (!madeFirstMove)
 		{
-			int response = getPieRuleReponse();
+			int response = getPieRuleResponse();
 			System.out.println("DEBUG -- Pie rule response: " + response);
 
 			if (response == 0)
@@ -334,10 +318,9 @@ public class KalahHumanClient
 		}
 	}
 
-	private boolean gotPlayerMove(int move)
+	protected boolean gotPlayerMove(int move)
 	{
-		int result = kalahGame.executeMove(move, 0);
-		boolean bonusMove = (result == 1);
+		boolean bonusMove = super.gotPlayerMove(move);
 
 		playerTurn = bonusMove;
 		drawGameBoardScreen();
@@ -373,23 +356,15 @@ public class KalahHumanClient
 		}
 	}
 
-	private String readFromServer() throws IOException
-	{
-		String result = input.readLine();
-		System.out.println("DEBUG -- Read from server: " + result);
-		return result;
-	}
-
-	private void run() throws IOException
+	@Override
+	protected void run()
 	{
 		String serverAddress = getServerAddress();
 		if (serverAddress != null)
 		{
 			try
 			{
-				Socket socket = new Socket(serverAddress, 9090);
-				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				output = new PrintWriter(socket.getOutputStream(), true);
+				super.connectToServer(serverAddress);
 			}
 			catch (ConnectException e)
 			{
@@ -401,13 +376,30 @@ public class KalahHumanClient
 				drawConnectionFailedScreen();
 				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
+			catch (IOException e)
+			{
+				drawConnectionFailedScreen();
+				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+			}
 
 			drawConnectingScreen();
 
 			while (true)
 			{
-				String line = readFromServer();
-				if (line == null)
+				String line = "";
+				try
+				{
+					line = readFromServer();
+				}
+				catch (IOException e)
+				{
+					drawLostConnectionScreen();
+
+					System.out.println("Closing...");
+					System.exit(1);
+				}
+
+				if (line == null || line == "")
 				{
 					System.out.println("DEBUG -- Lost connection to server.");
 
@@ -508,9 +500,8 @@ public class KalahHumanClient
 				}
 				else if (line.startsWith("P"))
 				{
-					writeToServer("OK");
 					System.out.println("DEBUG -- Player chose pie rule.");
-					kalahGame.swapSides();
+					gotPieMove();
 					playerTurn = true;
 					drawGameBoardScreen();
 				}
@@ -527,11 +518,5 @@ public class KalahHumanClient
 			System.out.println("Quitting...");
 			System.exit(1);
 		}
-	}
-
-	private void writeToServer(String message)
-	{
-		System.out.println("DEBUG -- Writing to server: " + message);
-		output.println(message);
 	}
 }
