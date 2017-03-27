@@ -11,20 +11,27 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 
 public class KalahClientHuman extends KalahClient
 {
 	protected JFrame frame;
+	protected JLabel timerLabel;
 	protected ArrayList<KalahPitButton> playerSideHouses;
 	protected ArrayList<KalahPitButton> opponentSideHouses;
 	protected KalahPitButton playerEndZone;
 	protected KalahPitButton opponentEndZone;
 
+	protected Timer timer;
+	
+	protected long currentTime;
 	protected boolean needsAck;
 	protected boolean needsInfo;
 	protected boolean madeFirstMove;
 	protected String moveString;
 	protected boolean playerTurn;
+	protected boolean resetTimer;
+	protected long timeoutInMs;
 
 	public static void main(String[] args) throws Exception
 	{
@@ -41,6 +48,11 @@ public class KalahClientHuman extends KalahClient
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
 		frame.setSize(900, 400);
+		
+		timerLabel = new JLabel();
+		timerLabel.setBounds(800, 15, 85, 30);
+		timerLabel.setHorizontalAlignment(JLabel.LEFT);
+		timerLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
 
 		drawStartScreen();
 
@@ -50,6 +62,7 @@ public class KalahClientHuman extends KalahClient
 		needsInfo = false;
 		playerTurn = false;
 		madeFirstMove = false;
+		resetTimer = true;
 
 		moveString = "";
 	}
@@ -95,6 +108,46 @@ public class KalahClientHuman extends KalahClient
 
 		playerEndZone.setText(kalahGame.getSeedCountInMyPit() + "");
 		opponentEndZone.setText(kalahGame.getSeedCountInOpponentPit() + "");
+		
+		if (playerTurn)
+		{
+			if (resetTimer)
+			{
+				resetTimer = false;
+				
+				currentTime = timeoutInMs / 1000;
+				
+				String numSeconds = String.format("%02d", timeoutInMs / 1000);
+				timerLabel.setText(timeoutInMs / 60000 + ":" + numSeconds);
+				timer = new Timer(1000, new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent e)
+					{
+						if (currentTime > 0)
+						{
+							--currentTime;
+							String numSeconds = String.format("%02d", currentTime);
+							timerLabel.setText(currentTime / 60 + ":" + numSeconds);
+						}
+						else
+						{
+							timer.stop();
+						}
+					}
+				});
+				timer.start();
+			}
+			frame.getContentPane().add(timerLabel);
+		}
+		else
+		{
+			resetTimer = true;
+			if (timer != null)
+			{
+				timer.stop();
+			}
+		}
 
 		frame.getContentPane().add(playerTurnLabel);
 		frame.getContentPane().add(playerEndZone);
@@ -193,7 +246,7 @@ public class KalahClientHuman extends KalahClient
 			{
 				int houseCount = Integer.parseInt(infoMessageParts[1]);
 				int seedCount = Integer.parseInt(infoMessageParts[2]);
-				int timeoutInMs = Integer.parseInt(infoMessageParts[3]);
+				timeoutInMs = Integer.parseInt(infoMessageParts[3]);
 				String goesFirstStr = infoMessageParts[4];
 				String standardLayoutStr = infoMessageParts[5];
 
