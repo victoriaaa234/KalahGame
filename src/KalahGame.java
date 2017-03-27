@@ -103,8 +103,9 @@ public class KalahGame
 						{
 							System.out.println("DEBUG -- Executing war!");
 							int opponentIdx = (endZoneIdx[0] - finishIdx) * 2 + finishIdx;
-							kalahBoard[endZoneIdx[0]] += kalahBoard[opponentIdx];
+							kalahBoard[endZoneIdx[0]] += kalahBoard[opponentIdx] + 1;
 							kalahBoard[opponentIdx] = 0;
+							kalahBoard[finishIdx] = 0;
 						}
 					}
 					else
@@ -113,8 +114,9 @@ public class KalahGame
 						{
 							System.out.println("DEBUG -- Executing war!");
 							int opponentIdx = finishIdx - (finishIdx - endZoneIdx[0]) * 2;
-							kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx];
+							kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx] + 1;
 							kalahBoard[opponentIdx] = 0;
+							kalahBoard[finishIdx] = 0;
 						}
 					}
 				}
