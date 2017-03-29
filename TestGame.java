@@ -3,15 +3,22 @@ public class TestGame{
 
 	public static void main(String[] args){
 		GameState g = new GameState(6,4);
+		long startTime = System.currentTimeMillis();
+
+
 		
-		
-		treeHelper(g,3,true);
+		treeHelper(g,6,true);
 		//g.printGameState();
 		System.out.println("Printing Tree");
 		calcMinMax(g,true);
-		g.printGameState();
+	//	g.printGameState();
 
-		printTree(g);
+		//printTree(g);
+		print(g);
+		//need to figure out nextbestChoice
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("total run time : "+totalTime+" miliseconds");
 	
 	}
 	/*populates min and max value. Player 1 is max and player 2 is min*/
@@ -25,11 +32,11 @@ public class TestGame{
 			
 		}
 		if(minOrMax){
-			System.out.println("max");
+			//System.out.println("max");
 			root.setMinMax(root.getMax());
 		}
 		else{
-			System.out.println("min");
+			//System.out.println("min");
 			root.setMinMax(root.getMin());
 		}
 		
@@ -39,7 +46,8 @@ public class TestGame{
 	public static void buildTree(GameState current, GameState prev,boolean player){
 		for(int i =1; i<=6; i++){
 			GameState r = new GameState(current);
-			int extraMove=r.turn(i,player);
+			
+			int extraMove=r.turn(i,player,current.getTurnSequence());
 			if(extraMove==0){
 				buildTree(r,prev,player);
 			}
@@ -65,11 +73,14 @@ public class TestGame{
 	}
 	//print one level
 	public static void print(GameState g){
-		for(GameState a: g.next){
-			System.out.println(" ");
-			a.printGameState();
-			System.out.println(" ");
+		GameState gs = g;
+	
+		while(gs != null){
+			gs.printGameState();
+			gs = gs.getNextChoice();
 		}
+		
+		
 		
 	}
 	//prints whole tree

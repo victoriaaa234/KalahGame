@@ -12,7 +12,18 @@ public class GameState{
 	private int seeds;
 	private int size;
 	private int min_max;
-
+	private GameState nextChoice;
+	private String turnSequence;
+	
+	public GameState(){
+		score = 0;
+		holes =0;
+		seeds =0;
+		size =0;
+		min_max=0;
+		turnSequence="";
+		nextChoice = null;
+	}
 	public GameState(int holes, int seeds){
 		next = new ArrayList<GameState>();
 		size = 2*holes+2;
@@ -33,6 +44,9 @@ public class GameState{
 		next = new ArrayList<GameState>();
 		this.holes = prev.getHoles(); 
 		this.seeds = prev.getSeeds();;
+		this.turnSequence=prev.getTurnSequence();
+		this.min_max=prev.getMinMax();
+		this.nextChoice=prev.nextChoice;
 		 size = 2*holes+2;
 		board = new int[size];
 		for(int i =0; i<size; i++){
@@ -55,6 +69,12 @@ public class GameState{
 	public int getMinMax(){
 		return min_max;
 	}
+	public GameState getNextChoice(){
+		return nextChoice;
+	}
+	public String getTurnSequence(){
+		return turnSequence;
+	}
 	
 	//set methods
 	public void setHoles(int holes){
@@ -70,21 +90,37 @@ public class GameState{
 	public void setMinMax(int num){
 		min_max=num;
 	}  
+	public void setNextChoice(GameState g){
+		nextChoice= new GameState(g);
+	}
 	//helper functions
 	
 	public int getMax(){
 		int m = Integer.MIN_VALUE;
+		int tempM =m;
 		for(GameState a : next){
-			m=Math.max(m,a.getMinMax());
+			tempM=Math.max(m,a.getMinMax());
+			if(m<tempM){
+				setNextChoice(a);
+				m=tempM;
+			}
 		}
-		System.out.println(m);
+		
 		return m;
 	}
 	public int getMin(){
 		int m = Integer.MAX_VALUE;
+		int tempM =m;
 		for(GameState a : next){
-			m=Math.min(m,a.getMinMax());
+			tempM=Math.min(m,a.getMinMax());
+			if(m>tempM){
+				setNextChoice(a);
+				m=tempM;
+			}
 		}
+		
+	
+		
 		return m;
 		
 	}
@@ -93,18 +129,19 @@ public class GameState{
 	
 	//-1 if error 0 if you need to repeat  1 if move valid
 	//player1 = true player 2= false
-	public int turn(int choice, boolean player){
+	public int turn(int choice, boolean player,String ts){
 		
 		if(player){
-			System.out.println("Player 1 Chose"+ choice);
+			//System.out.println("Player 1 Chose"+ choice);
+			turnSequence=ts+" P1: "+choice;
 			if(choice<1 || choice >6){
-				System.out.println("Error choose a house between 1 and 6");
+				//System.out.println("Error choose a house between 1 and 6");
 				return -1;
 
 			}
 			int index = choice;
 			if(board[choice]==0){
-				System.out.println("Choose again house empty");
+				//System.out.println("Choose again house empty");
 				//throw some exception
 				return -1;
 			}
@@ -129,16 +166,16 @@ public class GameState{
 			return 1;
 		}
 		else{
-			System.out.println("Player 2 Chose"+ choice);
-
+			//System.out.println("Player 2 Chose"+ choice);
+			turnSequence=ts+" P2: "+choice;
 			if(choice<1 || choice >6){
-				System.out.println("Error choose a house between 1 and 6");
+				//System.out.println("Error choose a house between 1 and 6");
 				return -1;
 
 			}
 			int index = choice+holes+1;
 			if(board[choice+holes+1]==0){
-				System.out.println("Choose again house empty");
+				//System.out.println("Choose again house empty");
 				//throw some exception
 				return -1;
 			}
@@ -169,7 +206,8 @@ public class GameState{
 			FileWriter writer = new FileWriter("output.txt", true);
 			
 			writer.write("The Heuristic is :"+ min_max+"\n");	
-			writer.write("----Player 2----\n");
+			writer.write("Turn Sequence: "+ turnSequence);
+			writer.write("\n----Player 2----\n");
 			int size = holes*2+2;
 			//prints player 2 holes
 			writer.write(" ");
