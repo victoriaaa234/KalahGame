@@ -97,27 +97,35 @@ public class GameState{
 	
 	public int getMax(){
 		int m = Integer.MIN_VALUE;
-		int tempM =m;
-		for(GameState a : next){
-			tempM=Math.max(m,a.getMinMax());
-			if(m<tempM){
-				setNextChoice(a);
-				m=tempM;
-			}
-		}
+		//int tempM =m;
+        for(GameState a : next){
+            //alpha pruning
+            if(a.getMinMax() > m) {
+                //tempM=Math.max(m,a.getMinMax());
+                //if(m<tempM){
+                    setNextChoice(a);
+                    //m=tempM;
+                    m = a.getMinMax();
+                //}
+            }
+        }
 		
 		return m;
 	}
 	public int getMin(){
 		int m = Integer.MAX_VALUE;
-		int tempM =m;
-		for(GameState a : next){
-			tempM=Math.min(m,a.getMinMax());
-			if(m>tempM){
-				setNextChoice(a);
-				m=tempM;
-			}
-		}
+		//int tempM =m;
+        for(GameState a : next){
+            //beta pruning
+            if(a.getMinMax() < m) {
+                //tempM=Math.min(m,a.getMinMax());
+                //if(m>tempM){
+                    setNextChoice(a);
+                    //m=tempM;
+                    m = a.getMinMax();
+                //}
+            }
+        }
 		
 	
 		
