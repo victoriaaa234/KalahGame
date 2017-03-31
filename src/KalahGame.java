@@ -96,27 +96,33 @@ public class KalahGame
 
 				if (kalahBoard[finishIdx] == 1)
 				{
-					System.out.println("DEBUG -- Potential War!");
+//					System.out.println("DEBUG -- Potential War!");
 					if (playerIdx == 0)
 					{
 						if (finishIdx < endZoneIdx[0])
 						{
-							System.out.println("DEBUG -- Executing war!");
+//							System.out.println("DEBUG -- Executing war!");
 							int opponentIdx = (endZoneIdx[0] - finishIdx) * 2 + finishIdx;
-							kalahBoard[endZoneIdx[0]] += kalahBoard[opponentIdx] + 1;
-							kalahBoard[opponentIdx] = 0;
-							kalahBoard[finishIdx] = 0;
+							if (kalahBoard[opponentIdx] > 0)
+							{
+								kalahBoard[endZoneIdx[0]] += kalahBoard[opponentIdx] + 1;
+								kalahBoard[opponentIdx] = 0;
+								kalahBoard[finishIdx] = 0;
+							}
 						}
 					}
 					else
 					{
 						if (finishIdx > endZoneIdx[0] && finishIdx != endZoneIdx[1])
 						{
-							System.out.println("DEBUG -- Executing war!");
+//							System.out.println("DEBUG -- Executing war!");
 							int opponentIdx = finishIdx - (finishIdx - endZoneIdx[0]) * 2;
-							kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx] + 1;
-							kalahBoard[opponentIdx] = 0;
-							kalahBoard[finishIdx] = 0;
+							if (kalahBoard[opponentIdx] > 0)
+							{
+								kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx] + 1;
+								kalahBoard[opponentIdx] = 0;
+								kalahBoard[finishIdx] = 0;
+							}
 						}
 					}
 				}
