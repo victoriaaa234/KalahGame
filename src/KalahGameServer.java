@@ -15,8 +15,8 @@ public class KalahGameServer
 {
 	public static void main(String[] args) throws IOException
 	{
-		int numHouses = 6;
-		int numSeedsPerHouse = 4;
+		int numHouses = 4;
+		int numSeedsPerHouse = 1;
 		long timeoutInMs = 30000;
 		boolean randomizeLayout = false;
 
@@ -108,6 +108,12 @@ public class KalahGameServer
 					KalahGameServerLogic game = new KalahGameServerLogic(numHouses, numSeedsPerHouse, randomizeLayout);
 					KalahGameServerLogic.KalahGamePlayer player0 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, true, game.getNumSeedsPerHouseStr());
 					KalahGameServerLogic.KalahGamePlayer player1 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, false, game.getNumSeedsPerHouseStr());
+					
+					if (!player0.initialized || !player1.initialized)
+					{
+						break;
+					}
+					
 					game.setCurrentPlayer(player0);
 					game.setFirstPlayer(player0);
 					player0.setOpponent(player1);
@@ -256,8 +262,7 @@ class KalahGameServerLogic
 			else
 			{
 				System.out.println("Got an invalid move from a player.");
-				System.out.println("Closing...");
-				System.exit(1);
+				return -1;
 			}
 
 			currentPlayer = player.opponent;
@@ -268,8 +273,6 @@ class KalahGameServerLogic
 		else
 		{
 			System.out.println("Got a null move from a player.");
-			System.out.println("Closing...");
-			System.exit(1);
 			return -1;
 		}
 	}
@@ -325,6 +328,8 @@ class KalahGameServerLogic
 
 		TimerTask timeoutTask;
 		Timer timer;
+		
+		public boolean initialized = false;
 
 		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, long numMsPerMove, boolean goesFirst)
 		{
@@ -341,12 +346,14 @@ class KalahGameServerLogic
 				char goesFirstChar = goesFirst == true ? 'F' : 'S';
 
 				infoString = "INFO " + numHouses + " " + numSeeds + " " + numMsPerMove + " " + goesFirstChar + " S";
+				this.initialized = true;
 			}
 			catch (IOException e)
 			{
 				System.out.println("Couldn't communicate with client successfully.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the server.");
+				quit();
+				return;
 			}
 		}
 
@@ -365,12 +372,14 @@ class KalahGameServerLogic
 				char goesFirstChar = goesFirst == true ? 'F' : 'S';
 
 				infoString = "INFO " + numHouses + " " + numSeeds + " " + numMsPerMove + " " + goesFirstChar + " R " + randomValuesAsStr;
+				initialized = true;
 			}
 			catch (IOException e)
 			{
 				System.out.println("Couldn't communicate with client successfully.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the server.");
+				quit();
+				return;
 			}
 		}
 
@@ -404,6 +413,18 @@ class KalahGameServerLogic
 			}
 		}
 
+		private void quit()
+		{
+			if (timeoutTask != null)
+			{
+				timeoutTask.cancel();
+			}
+			if (timer != null)
+			{
+				timer.cancel();
+			}
+		}
+		
 		private String readFromClient() throws IOException
 		{
 			String result = input.readLine();
@@ -421,8 +442,9 @@ class KalahGameServerLogic
 				if (!clientAck.equals("READY"))
 				{
 					System.out.println("Couldn't communicate initialization info with client successfully.");
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Restarting the server.");
+					quit();
+					return;
 				}
 
 				while (true)
@@ -443,86 +465,109 @@ class KalahGameServerLogic
 
 					String line = readFromClient();
 
-					if (line.startsWith("OK"))
+					if (line != null)
 					{
-						if (timeoutTask != null && timer != null)
+						if (line.startsWith("OK"))
 						{
-							timeoutTask.cancel();
-							timer.cancel();
+							if (timeoutTask != null && timer != null)
+							{
+								timeoutTask.cancel();
+								timer.cancel();
+							}
+	
+							if (needsAck)
+							{
+								needsAck = false;
+							}
+							else
+							{
+								System.out.println("Received errant ack.");
+								writeToClient("ILLEGAL");
+								writeToClient("LOSER");
+								opponent.writeToClient("WINNER");
+								System.out.println("Restarting the server.");
+								quit();
+								return;
+							}
 						}
-
-						if (needsAck)
+						else if (line.startsWith("READY"))
 						{
-							needsAck = false;
+							if (timeoutTask != null && timer != null)
+							{
+								timeoutTask.cancel();
+								timer.cancel();
+							}
+	
+							System.out.println("Received errant ready.");
+							writeToClient("ILLEGAL");
+							writeToClient("LOSER");
+							opponent.writeToClient("WINNER");
+							System.out.println("Restarting the server.");
+							quit();
+							return;
+						}
+						else if (line.startsWith("P"))
+						{
+							if (timeoutTask != null && timer != null)
+							{
+								timeoutTask.cancel();
+								timer.cancel();
+							}
+	
+							kalahGame.swapSides();
+							writeToClient("OK");
+							opponent.writeToClient("P");
+							opponent.needsAck = true;
 						}
 						else
 						{
-							System.out.println("Received errant ack.");
-							System.out.println("Quitting...");
-							System.exit(1);
+							if (timeoutTask != null && timer != null)
+							{
+								timeoutTask.cancel();
+								timer.cancel();
+							}
+	
+							if (!needsAck)
+							{
+								int result = parseMove(this, line);
+	
+								if (result != 0)
+								{
+									System.out.println("Got an invalid move.");
+									System.out.println("Assigning winners and losers.");
+	
+									forceLoser(this);
+									writeToClient("ILLEGAL");
+									writeToClient("LOSER");
+									opponent.writeToClient("WINNER");
+								}
+							}
+							else
+							{
+								System.out.println("Received command when needed an ack.");
+								writeToClient("ILLEGAL");
+								writeToClient("LOSER");
+								opponent.writeToClient("WINNER");
+								System.out.println("Restarting the server.");
+								quit();
+								return;
+							}
 						}
-					}
-					else if (line.startsWith("READY"))
-					{
-						if (timeoutTask != null && timer != null)
-						{
-							timeoutTask.cancel();
-							timer.cancel();
-						}
-
-						System.out.println("Received errant ready.");
-						System.out.println("Quitting...");
-						System.exit(1);
-					}
-					else if (line.startsWith("P"))
-					{
-						if (timeoutTask != null && timer != null)
-						{
-							timeoutTask.cancel();
-							timer.cancel();
-						}
-
-						kalahGame.swapSides();
-						writeToClient("OK");
-						opponent.writeToClient("P");
-						opponent.needsAck = true;
 					}
 					else
 					{
-						if (timeoutTask != null && timer != null)
-						{
-							timeoutTask.cancel();
-							timer.cancel();
-						}
-
-						if (!needsAck)
-						{
-							int result = parseMove(this, line);
-
-							if (result > 0)
-							{
-								System.out.println("Got an invalid move.");
-								System.out.println("Assigning winners and losers.");
-
-								forceLoser(this);
-								writeToClient("ILLEGAL");
-								opponent.writeToClient("WINNER");
-							}
-						}
-						else
-						{
-							System.out.println("Received command when needed an ack.");
-							System.out.println("Quitting...");
-							System.exit(1);
-						}
+						System.out.println("Restarting the server.");
+						quit();
+						return;
 					}
 				}
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the server.");
+				quit();
+				return;
 			}
 		}
 

@@ -41,8 +41,11 @@ public class KalahClientHuman extends KalahClient
 
 	public static void main(String[] args) throws Exception
 	{
-		KalahClientHuman client = new KalahClientHuman();
-		client.run();
+		while (true)
+		{
+			KalahClientHuman client = new KalahClientHuman();
+			client.run();
+		}
     }
 
 	public KalahClientHuman()
@@ -93,7 +96,7 @@ public class KalahClientHuman extends KalahClient
 	protected void drawConnectionFailedScreen()
 	{
 		Object[] options = { "OK" };
-	    JOptionPane.showOptionDialog(frame, "Couldn't find a server at the given address.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+	    JOptionPane.showOptionDialog(frame, "Couldn't find a server at the given address.\nReturning to the launch screen.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
 	protected void drawGameBoardScreen()
@@ -226,7 +229,7 @@ public class KalahClientHuman extends KalahClient
 	protected void drawLostConnectionScreen()
 	{
 		Object[] options = { "OK" };
-	    JOptionPane.showOptionDialog(frame, "You have lost connection to the game server.\nClosing the application.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+	    JOptionPane.showOptionDialog(frame, "You have lost connection to the game server.\nReturning to the launch screen.", "Lost Connection", JOptionPane.PLAIN_MESSAGE, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 	}
 
 	protected void drawStartScreen()
@@ -290,7 +293,7 @@ public class KalahClientHuman extends KalahClient
 		return JOptionPane.showInputDialog(frame, "Enter IP Address of the Server:", "Welcome to Kalah", JOptionPane.QUESTION_MESSAGE);
 	}
 
-	protected void gotInfoMessage(String message)
+	protected boolean gotInfoMessage(String message)
 	{
 		String[] infoMessageParts = message.split(" ");
 
@@ -317,8 +320,8 @@ public class KalahClientHuman extends KalahClient
 				else
 				{
 					System.out.println("Invalid info message from server.");
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Returning to the launch screen.");
+					return false;
 				}
 
 				if (standardLayoutStr.equals("S"))
@@ -338,8 +341,8 @@ public class KalahClientHuman extends KalahClient
 				else
 				{
 					System.out.println("Invalid info message from server.");
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Returning to the launch screen.");
+					return false;
 				}
 
 				int buttonSize = (frame.getWidth() - 35 - (houseCount * 5)) / (houseCount + 2);
@@ -400,18 +403,20 @@ public class KalahClientHuman extends KalahClient
 			catch (Exception e)
 			{
 				System.out.println("Invalid info message from server.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Returning to the launch screen.");
+				return false;
 			}
 		}
 		else
 		{
 			System.out.println("Invalid info message from server.");
-			System.out.println("Closing...");
-			System.exit(1);
+			System.out.println("Returning to the launch screen.");
+			return false;
 		}
 
 		writeToServer("READY");
+		
+		return true;
 	}
 
 	protected void gotOpponentMove(String moves)
@@ -510,6 +515,12 @@ public class KalahClientHuman extends KalahClient
 		}
 	}
 
+	protected void quit()
+	{
+		frame.setVisible(false);
+		frame.dispose();
+	}
+	
 	@Override
 	protected void run()
 	{
@@ -523,17 +534,26 @@ public class KalahClientHuman extends KalahClient
 			catch (ConnectException e)
 			{
 				drawConnectionFailedScreen();
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+				System.out.println("Returning to launch screen.");
+				quit();
+				return;
+//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 			catch (UnknownHostException e)
 			{
 				drawConnectionFailedScreen();
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+				System.out.println("Returning to launch screen.");
+				quit();
+				return;
+//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 			catch (IOException e)
 			{
 				drawConnectionFailedScreen();
-				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+				System.out.println("Returning to launch screen.");
+				quit();
+				return;
+//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 
 			drawConnectingScreen();
@@ -548,9 +568,10 @@ public class KalahClientHuman extends KalahClient
 				catch (IOException e)
 				{
 					drawLostConnectionScreen();
-
-					System.out.println("Closing...");
-					System.exit(1);
+					
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 
 				if (line == null || line == "")
@@ -559,16 +580,18 @@ public class KalahClientHuman extends KalahClient
 
 					drawLostConnectionScreen();
 
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("WELCOME"))
 				{
 					if (needsAck)
 					{
 						System.out.println("Got welcome instead of an ack.");
-						System.out.println("Quitting...");
-						System.exit(1);
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
 					}
 					else
 					{
@@ -583,21 +606,31 @@ public class KalahClientHuman extends KalahClient
 					if (needsAck)
 					{
 						System.out.println("Got new information instead of an ack.");
-						System.out.println("Quitting...");
-						System.exit(1);
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
 					}
 					else if (needsInfo)
 					{
 						System.out.println("DEBUG -- Got info.");
-						gotInfoMessage(line);
-						needsInfo = false;
-						drawGameBoardScreen();
+						if (gotInfoMessage(line))
+						{
+							needsInfo = false;
+							drawGameBoardScreen();
+						}
+						else
+						{
+							System.out.println("Returning to launch screen.");
+							quit();
+							return;
+						}
 					}
 					else
 					{
 						System.out.println("Got new information after initialization.");
-						System.out.println("Quitting...");
-						System.exit(1);
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
 					}
 				}
 				else if (line.startsWith("OK"))
@@ -614,7 +647,10 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawWinScreen();
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("LOSER"))
 				{
@@ -625,7 +661,10 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawLoseScreen();
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("TIE"))
 				{
@@ -636,21 +675,30 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawTieScreen();
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("ILLEGAL"))
 				{
 					System.out.println("DEBUG -- Illegal move.");
 
 					drawIllegalMoveScreen();
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("TIMEOUT"))
 				{
 					System.out.println("DEBUG -- Player took too long and timed out.");
 
 					drawTimedOutScreen();
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					System.out.println("Returning to launch screen.");
+					quit();
+					return;
 				}
 				else if (line.startsWith("P"))
 				{
@@ -668,9 +716,7 @@ public class KalahClientHuman extends KalahClient
 		}
 		else
 		{
-			System.out.println("Invalid IP Address.");
-			System.out.println("Quitting...");
-			System.exit(1);
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		}
 	}
 }

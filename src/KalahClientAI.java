@@ -8,16 +8,19 @@ public class KalahClientAI extends KalahClient
 
 	public static void main(String[] args) throws Exception
 	{
-		KalahClientAI client;
-		if (args.length > 0)
+		while (true)
 		{
-			client = new KalahClientAI(args[0]);
+			KalahClientAI client;
+			if (args.length > 0)
+			{
+				client = new KalahClientAI(args[0]);
+			}
+			else
+			{
+				client = new KalahClientAI("localhost");
+			}
+			client.run();
 		}
-		else
-		{
-			client = new KalahClientAI("localhost");
-		}
-		client.run();
     }
 
 	public KalahClientAI(String serverAddress)
@@ -38,22 +41,22 @@ public class KalahClientAI extends KalahClient
 			{
 				// TODO(): Deal with connection failure
 				System.out.println("DEBUG -- Connection failure.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the AI.");
+				return;
 			}
 			catch (UnknownHostException e)
 			{
 				// TODO(): Deal with incorrect hostname, ie mistyped "localhost"
 				System.out.println("DEBUG -- Invalid hostname.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the AI.");
+				return;
 			}
 			catch (IOException e)
 			{
 				// TODO(): Deal with other various connection issues
 				System.out.println("DEBUG -- Failed to initialize socket and connections.");
-				System.out.println("Closing...");
-				System.exit(1);
+				System.out.println("Restarting the AI.");
+				return;
 			}
 
 			System.out.println("Connecting to server...");
@@ -69,16 +72,16 @@ public class KalahClientAI extends KalahClient
 				{
 					// TODO(): Deal with lost connections
 					System.out.println("DEBUG -- Lost connection to server.");
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 
 				if (line == null || line == "")
 				{
 					// TODO(): Deal with lost connections
 					System.out.println("DEBUG -- Lost connection to server.");
-					System.out.println("Closing...");
-					System.exit(1);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("WELCOME"))
 				{
@@ -103,39 +106,39 @@ public class KalahClientAI extends KalahClient
 					// TODO(): AI doesn't care if it won/lost/tied, just that the game is over
 					// TODO(): We may want to merge or keep separate for custom printouts
 					System.out.println("AI won the Kalah game.");
-					System.out.println("Closing...");
-					System.exit(0);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("LOSER"))
 				{
 					// TODO(): AI doesn't care if it won/lost/tied, just that the game is over
 					// TODO(): We may want to merge or keep separate for custom printouts
 					System.out.println("AI lost the Kalah game.");
-					System.out.println("Closing...");
-					System.exit(0);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("TIE"))
 				{
 					// TODO(): AI doesn't care if it won/lost/tied, just that the game is over
 					// TODO(): We may want to merge or keep separate for custom printouts
 					System.out.println("AI tied the Kalah game.");
-					System.out.println("Closing...");
-					System.exit(0);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("ILLEGAL"))
 				{
 					// TODO(): This shouldn't ever happen, but find out why if it does
 					// NOTE(): Our server only sends illegal on lose, doesn't follow up with "LOSE"
 					System.out.println("AI made an illegal move and lost.");
-					System.out.println("Closing...");
-					System.exit(0);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("TIMEOUT"))
 				{
 					// TODO(): Make sure to not run over time!
 					System.out.println("AI ran out of time and lost.");
-					System.out.println("Closing...");
-					System.exit(0);
+					System.out.println("Restarting the AI.");
+					return;
 				}
 				else if (line.startsWith("P"))
 				{
@@ -155,7 +158,7 @@ public class KalahClientAI extends KalahClient
 		{
 			System.out.println("Invalid IP Address.");
 			System.out.println("Quitting...");
-			System.exit(1);
+			System.exit(0);
 		}
 	}
 }
