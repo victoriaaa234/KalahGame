@@ -38,6 +38,15 @@ public class KalahGame
 			kalahBoard[i + endZoneIdx[0] + 1] = numSeeds[i];
 		}
 	}
+	
+	public KalahGame(KalahGame toCopy)
+	{
+		this.kalahBoard = new int[toCopy.kalahBoard.length];
+		this.endZoneIdx = new int[toCopy.endZoneIdx.length];
+		
+		System.arraycopy(toCopy.kalahBoard, 0, this.kalahBoard, 0, toCopy.kalahBoard.length);
+		System.arraycopy(toCopy.endZoneIdx, 0, this.endZoneIdx, 0, toCopy.endZoneIdx.length);
+	}
 
 	// NOTE(Drew): Uses return codes
 	// 0 - Completed successfully, no bonus move
@@ -251,6 +260,41 @@ public class KalahGame
 			}
 		}
 
+		return result;
+	}
+	
+	public static boolean isDifferentAt(KalahGame realGame, KalahGame potentialGame, int idx, int playerIdx)
+	{
+		boolean result = realGame.getSeedCountAt(idx, playerIdx) != potentialGame.getSeedCountAt(idx, playerIdx);
+		
+		return result;
+	}
+	
+	public static boolean isDifferentAtMy(KalahGame realGame, KalahGame potentialGame, int idx)
+	{
+		boolean result = realGame.getSeedCountAtMy(idx) != potentialGame.getSeedCountAtMy(idx);
+		
+		return result;
+	}
+	
+	public static boolean isDifferentAtOpponent(KalahGame realGame, KalahGame potentialGame, int idx)
+	{
+		boolean result = realGame.getSeedCountAtOpponent(idx) != potentialGame.getSeedCountAtOpponent(idx);
+		
+		return result;
+	}
+	
+	public static boolean isDifferentInMyPit(KalahGame realGame, KalahGame potentialGame)
+	{
+		boolean result = realGame.getSeedCountInMyPit() != potentialGame.getSeedCountInMyPit();
+		
+		return result;
+	}
+	
+	public static boolean isDifferentInOpponentPit(KalahGame realGame, KalahGame potentialGame)
+	{
+		boolean result = realGame.getSeedCountInOpponentPit() != potentialGame.getSeedCountInOpponentPit();
+		
 		return result;
 	}
 

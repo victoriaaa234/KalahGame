@@ -1,6 +1,9 @@
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -32,6 +35,9 @@ public class KalahClientHuman extends KalahClient
 	protected boolean playerTurn;
 	protected boolean resetTimer;
 	protected long timeoutInMs;
+	
+	protected boolean potentialBonusMove;
+	protected KalahGame potentialGame;
 
 	public static void main(String[] args) throws Exception
 	{
@@ -63,6 +69,9 @@ public class KalahClientHuman extends KalahClient
 		playerTurn = false;
 		madeFirstMove = false;
 		resetTimer = true;
+		
+		potentialBonusMove = false;
+		potentialGame = null;
 
 		moveString = "";
 	}
@@ -98,16 +107,61 @@ public class KalahClientHuman extends KalahClient
 		for (int i = 0; i < playerSideHouses.size(); ++i)
 		{
 			KalahPitButton playerSideHouse = playerSideHouses.get(i);
-			playerSideHouse.setText(kalahGame.getSeedCountAtMy(i) + "");
+			if (potentialGame != null && KalahGame.isDifferentAtMy(kalahGame, potentialGame, i))
+			{
+				playerSideHouse.setText(potentialGame.getSeedCountAtMy(i) + "");
+				playerSideHouse.setForeground(Color.RED);
+			}
+			else
+			{
+				playerSideHouse.setText(kalahGame.getSeedCountAtMy(i) + "");
+				playerSideHouse.setForeground(Color.BLACK);
+			}
 			frame.getContentPane().add(playerSideHouse);
 
 			KalahPitButton opponentSideHouse = opponentSideHouses.get(i);
-			opponentSideHouse.setText(kalahGame.getSeedCountAtOpponent(i) + "");
+			if (potentialGame != null && KalahGame.isDifferentAtOpponent(kalahGame, potentialGame, i))
+			{
+				opponentSideHouse.setText(potentialGame.getSeedCountAtOpponent(i) + "");
+				opponentSideHouse.setForeground(Color.RED);
+			}
+			else
+			{
+				opponentSideHouse.setText(kalahGame.getSeedCountAtOpponent(i) + "");
+				opponentSideHouse.setForeground(Color.BLACK);
+			}
 			frame.getContentPane().add(opponentSideHouse);
 		}
 
-		playerEndZone.setText(kalahGame.getSeedCountInMyPit() + "");
-		opponentEndZone.setText(kalahGame.getSeedCountInOpponentPit() + "");
+		
+		if (potentialGame != null && KalahGame.isDifferentInMyPit(kalahGame, potentialGame))
+		{
+			playerEndZone.setText(potentialGame.getSeedCountInMyPit() + "");
+			if (potentialBonusMove)
+			{
+				playerEndZone.setForeground(Color.GREEN);
+			}
+			else
+			{
+				playerEndZone.setForeground(Color.RED);
+			}
+		}
+		else
+		{
+			playerEndZone.setText(kalahGame.getSeedCountInMyPit() + "");
+			playerEndZone.setForeground(Color.BLACK);
+		}
+		
+		if (potentialGame != null && KalahGame.isDifferentInOpponentPit(kalahGame, potentialGame))
+		{
+			opponentEndZone.setText(potentialGame.getSeedCountInOpponentPit() + "");
+			opponentEndZone.setForeground(Color.RED);
+		}
+		else
+		{
+			opponentEndZone.setText(kalahGame.getSeedCountInOpponentPit() + "");
+			opponentEndZone.setForeground(Color.BLACK);
+		}
 		
 		if (playerTurn)
 		{
@@ -315,8 +369,22 @@ public class KalahClientHuman extends KalahClient
 						@Override
 						public void actionPerformed(ActionEvent e)
 						{
-
 							kalahButtonPressed((KalahPitButton)(e.getSource()));
+						}
+					});
+					
+					myHouse.addMouseListener(new MouseAdapter()
+					{
+						@Override
+						public void mouseEntered(MouseEvent e)
+						{
+							kalahButtonHoverStart((KalahPitButton)(e.getSource()));
+						}
+						
+						@Override
+						public void mouseExited(MouseEvent e)
+						{
+							kalahButtonHoverEnd((KalahPitButton)(e.getSource()));
 						}
 					});
 
@@ -381,6 +449,39 @@ public class KalahClientHuman extends KalahClient
 		return bonusMove;
 	}
 
+	private void kalahButtonHoverEnd(KalahPitButton source)
+	{
+		potentialGame = null;
+		potentialBonusMove = false;
+		drawGameBoardScreen();
+	}
+	
+	private void kalahButtonHoverStart(KalahPitButton source)
+	{
+		if (playerTurn)
+		{
+			int idx = source.getIndex();
+			
+			potentialGame = new KalahGame(kalahGame);
+			int result = potentialGame.executeMove(idx, 0);
+			if (result == 2)
+			{
+				potentialGame = null;
+				potentialBonusMove = false;
+			}
+			else if (result == 1)
+			{
+				potentialBonusMove = true;
+			}
+			else
+			{
+				potentialBonusMove = false;
+			}
+			
+			drawGameBoardScreen();
+		}
+	}
+	
 	private void kalahButtonPressed(KalahPitButton source)
 	{
 		if (playerTurn)
