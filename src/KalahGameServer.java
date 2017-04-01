@@ -446,6 +446,7 @@ class KalahGameServerLogic
 					quit();
 					return;
 				}
+				writeToClient("BEGIN");
 
 				while (true)
 				{

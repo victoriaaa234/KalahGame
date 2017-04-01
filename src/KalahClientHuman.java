@@ -29,6 +29,7 @@ public class KalahClientHuman extends KalahClient
 	
 	protected long currentTime;
 	protected boolean needsAck;
+	protected boolean needsBegin;
 	protected boolean needsInfo;
 	protected boolean madeFirstMove;
 	protected String moveString;
@@ -68,6 +69,7 @@ public class KalahClientHuman extends KalahClient
 		frame.setVisible(true);
 
 		needsAck = false;
+		needsBegin = false;
 		needsInfo = false;
 		playerTurn = false;
 		madeFirstMove = false;
@@ -584,6 +586,35 @@ public class KalahClientHuman extends KalahClient
 					quit();
 					return;
 				}
+				else if (line.startsWith("BEGIN"))
+				{
+					if (needsAck)
+					{
+						System.out.println("Got begin instead of an ack.");
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
+					}
+					else if (needsInfo)
+					{
+						System.out.println("Got begin before got info.");
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
+					}
+					else if (needsBegin)
+					{
+						drawGameBoardScreen();
+						needsBegin = false;
+					}
+					else
+					{
+						System.out.println("Received duplicate begin.");
+						System.out.println("Returning to launch screen.");
+						quit();
+						return;
+					}
+				}
 				else if (line.startsWith("WELCOME"))
 				{
 					if (needsAck)
@@ -597,7 +628,8 @@ public class KalahClientHuman extends KalahClient
 					{
 						System.out.println("DEBUG -- Got welcome.");
 						needsInfo = true;
-						// NOTE(Drew): Properly connected, waiting for other client so we can get info.
+						needsBegin = true;
+						// NOTE(Drew): Properly connected, waiting for other client so we can begin.
 						drawWaitingForConnectScreen();
 					}
 				}
@@ -616,10 +648,10 @@ public class KalahClientHuman extends KalahClient
 						if (gotInfoMessage(line))
 						{
 							needsInfo = false;
-							drawGameBoardScreen();
 						}
 						else
 						{
+							System.out.println("Received an errant info packet.");
 							System.out.println("Returning to launch screen.");
 							quit();
 							return;
