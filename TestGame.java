@@ -11,8 +11,8 @@ public class TestGame{
         calcMinMax(g,true);
     //  g.printGameState();
 
-        //printTree(g);
-        //print(g);
+    //   printTree(g);
+     //   printBestChoice(g);
         //need to figure out nextbestChoice
         long endTime   = System.currentTimeMillis();
         long totalTime = endTime - startTime;
@@ -21,22 +21,22 @@ public class TestGame{
     
     /*populates min and max value. Player 1 is max and player 2 is min*/
     public static void calcMinMax(GameState root,boolean minOrMax){
-        // if(root.next.isEmpty()){
-        //     root.setMinMax(root.getScore());
-        //     return;
-        // }
-        // for(int i =0; i<root.next.size(); i++){
-        //     calcMinMax(root.next.get(i),!minOrMax);
-        // }
-        // if(minOrMax){
-        //     //System.out.println("max");
-        //     root.setMinMax(root.getMax());
-        // }
-        // else{
-        //     //System.out.println("min");
-        //     root.setMinMax(root.getMin());
-        // }
-        System.out.println(alphaBetaPruning(root, Integer.MIN_VALUE, Integer.MAX_VALUE, minOrMax));
+/*            if(root.next.isEmpty()){
+             root.setMinMax(root.getScore());
+             return;
+         }
+         for(int i =0; i<root.next.size(); i++){
+             calcMinMax(root.next.get(i),!minOrMax);
+         }
+         if(minOrMax){
+             //System.out.println("max");
+             root.setMinMax(root.getMax());
+         }
+         else{
+             //System.out.println("min");
+             root.setMinMax(root.getMin());
+         }   */
+         System.out.println(alphaBetaPruning(root, Integer.MIN_VALUE, Integer.MAX_VALUE, minOrMax));
     }
     
     //alpha beta pruning
@@ -52,9 +52,7 @@ public class TestGame{
             for(GameState g : root.next) {
                 root.setV(Math.max(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));
                 /* TODO: Set the next best choice */
-                // if(root.getV() == g.getMinMax()) {
-                //     root.setNextChoice(g);
-                // }
+                
                 alpha = Math.max(alpha, root.getV());
                 if(beta <= alpha) {
                     break;
@@ -62,6 +60,12 @@ public class TestGame{
             }
             root.setMinMax(root.getV());
             //System.out.println("Max:" + root.getMinMax());
+ 			for(GameState g : root.next){
+				 if(root.getV() == g.getMinMax()) {
+                     root.setNextChoice(g);
+					  break;
+                 }
+			}  
             return root.getV();  
         }
         else { //Min player
@@ -69,9 +73,7 @@ public class TestGame{
             for(GameState g: root.next) {
                 root.setV(Math.min(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));
                 /* TODO: Set the next best choice */
-                // if(root.getV() == g.getMinMax()) {
-                //     root.setNextChoice(g);
-                // }
+                
                 beta = Math.min(beta, root.getV());
                 if(beta <= alpha) {
                     break;
@@ -79,6 +81,12 @@ public class TestGame{
             }
             root.setMinMax(root.getV());
             //System.out.println("Min:" + root.getMinMax());
+  			for(GameState g : root.next){
+				 if(root.getV() == g.getMinMax()) {
+                     root.setNextChoice(g);
+					 break;
+                 }
+			} 
             return root.getV();
         }
     }
@@ -111,8 +119,8 @@ public class TestGame{
         }   
     }
     
-    //print one level
-    public static void print(GameState g){
+    //prints best choice
+    public static void printBestChoice(GameState g){
         GameState gs = g;
     
         while(gs != null){
