@@ -15,8 +15,8 @@ public class KalahGameServer
 {
 	public static void main(String[] args) throws IOException
 	{
-		int numHouses = 4;
-		int numSeedsPerHouse = 1;
+		int numHouses = 6;
+		int numSeedsPerHouse = 4;
 		long timeoutInMs = 30000;
 		boolean randomizeLayout = false;
 
