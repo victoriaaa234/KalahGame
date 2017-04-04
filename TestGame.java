@@ -1,22 +1,42 @@
 import java.util.*;
-public class TestGame{
+public class TestGame {
 
-    public static void main(String[] args){
+    public static boolean gameOver = false;
+    public static boolean endGame = true;
+
+    public static void main(String[] args) {
         GameState g = new GameState(6,4);
         long startTime = System.currentTimeMillis();
+        while(!gameOver) {
 
-        treeHelper(g,6,true);
-        //g.printGameState();
-        System.out.println("Printing Tree");
-        calcMinMax(g,true);
-    //  g.printGameState();
+            treeHelper(g, 6, endGame);
+            //g.printGameState();
+            calcMinMax(g, endGame);
+            printBestChoice(g);
 
-    //   printTree(g);
-     //   printBestChoice(g);
-        //need to figure out nextbestChoice
+            if(!gameOver) {
+                g = setNewGameState(g);
+            }
+            //  g.printGameState();
+
+            //   printTree(g);
+            
+        }
         long endTime   = System.currentTimeMillis();
         long totalTime = endTime - startTime;
         System.out.println("total run time : "+totalTime+" miliseconds");
+    }
+    
+    /*set new game state and calculate more depth of min max */
+    public static GameState setNewGameState(GameState root) {
+        GameState gs = root;
+        GameState newGameState = root;
+        
+        while(gs != null) {
+            newGameState = gs;
+            gs = gs.getNextChoice();
+        }
+        return newGameState;
     }
     
     /*populates min and max value. Player 1 is max and player 2 is min*/
@@ -36,7 +56,7 @@ public class TestGame{
              //System.out.println("min");
              root.setMinMax(root.getMin());
          }   */
-         System.out.println(alphaBetaPruning(root, Integer.MIN_VALUE, Integer.MAX_VALUE, minOrMax));
+         alphaBetaPruning(root, Integer.MIN_VALUE, Integer.MAX_VALUE, minOrMax);
     }
     
     //alpha beta pruning
@@ -56,12 +76,15 @@ public class TestGame{
                 }
             }
             root.setMinMax(root.getV());
- 			for(GameState g : root.next){
-				 if(root.getV() == g.getMinMax()) {
+            for(GameState g : root.next){
+                 if(root.getV() == g.getMinMax()) {
                      root.setNextChoice(g);
-					  break;
+                     if(g.getEndGame()) {
+                         gameOver = true;
+                     }
+                     break;
                  }
-			}  
+            }  
             return root.getV();  
         }
         //Min player
@@ -75,12 +98,15 @@ public class TestGame{
                 }
             }
             root.setMinMax(root.getV());
-  			for(GameState g : root.next){
-				 if(root.getV() == g.getMinMax()) {
+            for(GameState g : root.next){
+                 if(root.getV() == g.getMinMax()) {
                      root.setNextChoice(g);
-					 break;
+                     if(g.getEndGame()) {
+                         gameOver = true;
+                     }
+                     break;
                  }
-			} 
+            } 
             return root.getV();
         }
     }
@@ -90,7 +116,7 @@ public class TestGame{
         for(int i = 1; i<=current.getHoles(); i++){
             GameState r = new GameState(current);
             
-            int extraMove=r.turn(i,player,current.getTurnSequence());
+            int extraMove=r.turn(i,player,endGame,current.getTurnSequence());
             if(extraMove==0){
                 buildTree(r,prev,player);
             }

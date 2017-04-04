@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.lang.*;
 
-public class GameState{
+public class GameState {
     
     public ArrayList<GameState> next;
     private int[] board;
@@ -14,6 +14,7 @@ public class GameState{
     private GameState nextChoice;
     private String turnSequence;
     private int v;
+    private boolean isEndGame;
     
     public GameState(){
         score = 0;
@@ -23,6 +24,7 @@ public class GameState{
         min_max=0;
         turnSequence="";
         nextChoice = null;
+        isEndGame = false;
     }
     
     public GameState(int holes, int seeds){
@@ -31,7 +33,6 @@ public class GameState{
         board = new int[size];
         for(int i =0; i<size; i++){
             if(i !=0 && i!=holes+1){
-                //System.out.println(i);
                 board[i]=seeds;
             }
             else{
@@ -40,6 +41,7 @@ public class GameState{
         }
         this.holes = holes; 
         this.seeds = seeds;
+        this.isEndGame = false;
     }
     
     public GameState(GameState prev){
@@ -55,9 +57,16 @@ public class GameState{
             board[i]= prev.getBoard()[i];
         }
         this.v = prev.getV();
+        this.isEndGame = prev.getEndGame();
     }
     
     //get methods
+    public boolean getEndGame() {
+        return isEndGame;
+    }
+    public int getSize() {
+        return size;
+    }
     public int getHoles(){
         return holes;
     }
@@ -84,6 +93,9 @@ public class GameState{
     }
     
     //set methods
+    public void setEndGame(boolean value) {
+        isEndGame = value;
+    }
     public void setHoles(int holes){
         this.holes = holes;
     }
@@ -128,13 +140,33 @@ public class GameState{
         }
         return m;
     }
+   
+    //check if end of game
+    public boolean endGame(boolean player) {
+        if(player) {
+            for(int i = 1; i <= holes; i++) {
+                if(board[i] != 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            for(int i = holes + 2; i <= size-1; i++) {
+                if(board[i] != 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
     
     //-1 if error 0 if you need to repeat  1 if move valid
     //player1 = true player 2= false
-    public int turn(int choice, boolean player,String ts){
+    public int turn(int choice, boolean player, boolean end, String ts){
         if(player){
             //System.out.println("Player 1 Chose"+ choice);
-            turnSequence=ts+" P1: "+choice;
+            turnSequence=ts+" P1:"+choice;
             if(choice<1 || choice >holes){
                 //System.out.println("Error choose a house between 1 and the number of holes chosen by the player");
                 return -1;
@@ -163,16 +195,26 @@ public class GameState{
                     }
                 }   
             }
-            if(index%size == holes+1){
-            	return 0;
+            if(endGame(end)) {
+                int remainingSeeds = 0;
+                for(int i = holes + 2; i <= size - 1; i++) {
+                    remainingSeeds += board[i]; 
+                    board[i] = 0;
+                }
+                board[0] += remainingSeeds;
+                setEndGame(true);
+            }    
+            else {
+                if(index%size == holes+1){
+                    return 0;
+                }
             }
             updateScore();
-            //System.out.println("Done");
             return 1;
         }
         else{
             //System.out.println("Player 2 Chose"+ choice);
-            turnSequence=ts+" P2: "+choice;
+            turnSequence=ts+" P2:"+choice;
             if(choice<1 || choice >holes){
                 //System.out.println("Error choose a house between 1 and the number of holes chosen by the player");
                 return -1;
@@ -200,8 +242,19 @@ public class GameState{
                 }   
                 
             }
-            if(index%size == 0){
-            	return 0;
+            if(endGame(end)) {
+                int remainingSeeds = 0;
+                for(int i = 1; i <= holes; i++) {
+                    remainingSeeds += board[i]; 
+                    board[i] = 0;
+                }
+                board[holes + 1] += remainingSeeds;
+                setEndGame(true);
+            } 
+            else {
+                if(index%size == 0){
+                    return 0;
+                }
             }
             updateScore();
             return 1;
