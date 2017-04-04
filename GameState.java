@@ -135,8 +135,8 @@ public class GameState{
         if(player){
             //System.out.println("Player 1 Chose"+ choice);
             turnSequence=ts+" P1: "+choice;
-            if(choice<1 || choice >6){
-                //System.out.println("Error choose a house between 1 and 6");
+            if(choice<1 || choice >holes){
+                //System.out.println("Error choose a house between 1 and the number of holes chosen by the player");
                 return -1;
             }
             int index = choice;
@@ -154,7 +154,7 @@ public class GameState{
                         
                     board[choice]--;
                     //war scenario
-                    if(board[choice] == 0 && board[index%size] == 0 && index%size >= 1 && index%size <=6 && board[size-(index%size)] != 0) {
+                    if(board[choice] == 0 && board[index%size] == 0 && index%size >= 1 && index%size <=holes && board[size-(index%size)] != 0) {
                         board[holes+1] += board[size-(index%size)] + 1;
                         board[size-(index%size)] = 0;
                     }
@@ -164,7 +164,7 @@ public class GameState{
                 }   
             }
             if(index%size == holes+1){
-                return 0;
+            	return 0;
             }
             updateScore();
             //System.out.println("Done");
@@ -173,8 +173,8 @@ public class GameState{
         else{
             //System.out.println("Player 2 Chose"+ choice);
             turnSequence=ts+" P2: "+choice;
-            if(choice<1 || choice >6){
-                //System.out.println("Error choose a house between 1 and 6");
+            if(choice<1 || choice >holes){
+                //System.out.println("Error choose a house between 1 and the number of holes chosen by the player");
                 return -1;
             }
             int index = choice+holes+1;
@@ -190,7 +190,7 @@ public class GameState{
                 if((index)%size != holes+1){
                     board[choice+holes+1]--;
                     //war scenario
-                    if(board[choice+holes+1] == 0 && board[index%size] == 0 && index%size >= 8 && index%size <= 13 && board[size-(index%size)] != 0) {
+                    if(board[choice+holes+1] == 0 && board[index%size] == 0 && index%size >= holes + 2 && index%size <= size - 1 && board[size-(index%size)] != 0) {
                         board[0] += board[size-(index%size)] + 1;
                         board[size-(index%size)] = 0;
                     }
@@ -201,7 +201,7 @@ public class GameState{
                 
             }
             if(index%size == 0){
-                return 0;
+            	return 0;
             }
             updateScore();
             return 1;

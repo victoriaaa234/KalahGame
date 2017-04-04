@@ -43,23 +43,19 @@ public class TestGame{
     public static int alphaBetaPruning(GameState root, int alpha, int beta, boolean player){
         if(root.next.isEmpty()) {
             root.setMinMax(root.getScore());
-            //System.out.println("leaf:" + root.getMinMax());
             return root.getScore();
         }
         //Max player
         if(player) {
             root.setV(Integer.MIN_VALUE);
             for(GameState g : root.next) {
-                root.setV(Math.max(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));
-                /* TODO: Set the next best choice */
-                
+                root.setV(Math.max(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));                
                 alpha = Math.max(alpha, root.getV());
                 if(beta <= alpha) {
                     break;
                 }
             }
             root.setMinMax(root.getV());
-            //System.out.println("Max:" + root.getMinMax());
  			for(GameState g : root.next){
 				 if(root.getV() == g.getMinMax()) {
                      root.setNextChoice(g);
@@ -68,19 +64,17 @@ public class TestGame{
 			}  
             return root.getV();  
         }
-        else { //Min player
+        //Min player
+        else {
             root.setV(Integer.MAX_VALUE);
             for(GameState g: root.next) {
-                root.setV(Math.min(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));
-                /* TODO: Set the next best choice */
-                
+                root.setV(Math.min(root.getV(), alphaBetaPruning(g, alpha, beta, !player)));                
                 beta = Math.min(beta, root.getV());
                 if(beta <= alpha) {
                     break;
                 }
             }
             root.setMinMax(root.getV());
-            //System.out.println("Min:" + root.getMinMax());
   			for(GameState g : root.next){
 				 if(root.getV() == g.getMinMax()) {
                      root.setNextChoice(g);
@@ -93,7 +87,7 @@ public class TestGame{
 
     //calculates the possible next moves
     public static void buildTree(GameState current, GameState prev,boolean player){
-        for(int i =1; i<=6; i++){
+        for(int i = 1; i<=current.getHoles(); i++){
             GameState r = new GameState(current);
             
             int extraMove=r.turn(i,player,current.getTurnSequence());
