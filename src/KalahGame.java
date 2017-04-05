@@ -3,6 +3,7 @@ public class KalahGame
 {
 	private int[] kalahBoard;
 	private int[] endZoneIdx;
+	private GameState gameAI;
 
 	private KalahGame(int numHouses)
 	{
@@ -24,8 +25,7 @@ public class KalahGame
 			kalahBoard[i] = numSeedsPerHouse;
 			kalahBoard[i + endZoneIdx[0] + 1] = numSeedsPerHouse;
 		}
-
-
+		gameAI = new GameState(numHouses, numSeedsPerHouse);
 	}
 
 	public KalahGame(int numHouses, int[] numSeeds)
@@ -37,6 +37,7 @@ public class KalahGame
 			kalahBoard[i] = numSeeds[i];
 			kalahBoard[i + endZoneIdx[0] + 1] = numSeeds[i];
 		}
+		gameAI = new GameState(numHouses, numSeeds);
 	}
 	
 	public KalahGame(KalahGame toCopy)
