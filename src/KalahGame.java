@@ -49,6 +49,19 @@ public class KalahGame
 		System.arraycopy(toCopy.endZoneIdx, 0, this.endZoneIdx, 0, toCopy.endZoneIdx.length);
 	}
 
+	public void createTree(int playerIdx)
+	{
+		boolean endGame = true;
+		if(playerIdx == 1)
+		{
+			endGame = false;
+		}
+		Minimax.treeHelper(gameAI, 6, endGame);
+		Minimax.calcMinMax(gameAI, endGame);
+		String turnSequence = gameAI.getNextChoice().getTurnSequence();
+		String turn = Minimax.parseTurnSequence(turnSequence);
+	}
+	
 	// NOTE(Drew): Uses return codes
 	// 0 - Completed successfully, no bonus move
 	// 1 - Player earned a bonus move

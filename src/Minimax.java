@@ -30,31 +30,46 @@ public class Minimax
         System.out.println("total run time : " + totalTime + " miliseconds");
     }
     
-    /*parses turn sequence for values. to be used later*/
-    public static String parseTurnSequence(String turnSequence, boolean player) 
+    /*parses turn sequence for values*/
+    public static String parseTurnSequence(String turnSequence) 
     {
-    	String turn = "";
+    	StringBuilder builder = new StringBuilder(turnSequence.length() + 1);
+    	String[] words = turnSequence.split(" ");
+    	for (int i = words.length - 1; i >= 0; i--)
+    	{
+    		builder.append(words[i]).append(' ');
+    	}
+    	builder.setLength(builder.length() - 1);
+    	String reversedString = builder.toString();
+    	
+    	StringTokenizer st = new StringTokenizer(reversedString);
     	String token = "";
-    	StringTokenizer st = new StringTokenizer(turnSequence);
-    	while(st.hasMoreTokens()) 
+    	String turn = "";
+    	String key = "";
+    	int iter = 0;
+    	while(st.hasMoreTokens())
     	{
     		token = st.nextToken();
-    		if(player)
+    		if(iter == 0 && token.substring(0,3).equals("P1:"))
     		{
-    			if(token.substring(0,3).equals("P1:"))
-    			{
-    				token = token.substring(3, token.length());
-    			}
+    			key = "P1:";
+    			iter = 1;
+    		}
+    		else if(iter == 0 && token.substring(0,3).equals("P2:"))
+    		{
+    			key = "P2:";
+    			iter = 1;
+    		}
+    		if(!key.equals(token.substring(0,3)))
+    		{
+    			break;
     		}
     		else
     		{
-    			if(token.substring(0,3).equals("P2:"))
-    			{
-    				token = token.substring(3, token.length());
-    			}
+    			turn += token + " ";
     		}
-    		turn += token + " ";
     	}
+    	turn = turn.substring(0, turn.length() -1);
     	return turn;
     }
     
