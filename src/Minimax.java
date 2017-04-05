@@ -30,9 +30,22 @@ public class Minimax
         System.out.println("total run time : " + totalTime + " miliseconds");
     }
     
+    /*if AI is player 2 :returns true AI should steal, false if doesnt need to
+      if AI is player 1 : TODO: pick a gamestate thats not hte worst or the best*/
+    
+//    public static boolean pieRuleSteal(GameState opponentMove, GameState bestMove, boolean player)
+//    {
+//    	if(!player){
+//    		return opponentMove.equals(bestMove);
+//    	}
+//    }
+    
     /*parses turn sequence for values*/
     public static String parseTurnSequence(String turnSequence) 
     {
+    	if(turnSequence == null) {
+    		return "";
+    	}
     	StringBuilder builder = new StringBuilder(turnSequence.length() + 1);
     	String[] words = turnSequence.split(" ");
     	for (int i = words.length - 1; i >= 0; i--)
@@ -66,11 +79,20 @@ public class Minimax
     		}
     		else
     		{
-    			turn += token + " ";
+    			turn += token.substring(3) + " ";
     		}
     	}
-    	turn = turn.substring(0, turn.length() -1);
-    	return turn;
+        turn = turn.substring(0, turn.length() -1);
+        
+    	StringBuilder finalStringBuilder = new StringBuilder(turn.length() + 1);
+    	String[] finalWords = turn.split(" ");
+    	for (int i = finalWords.length - 1; i >= 0; i--)
+    	{
+    		finalStringBuilder.append(finalWords[i]).append(' ');
+    	}
+    	finalStringBuilder.setLength(finalStringBuilder.length() - 1);
+    	String finalString = finalStringBuilder.toString();
+        return finalString;
     }
     
     /*set new game state and calculate more depth of min max */
@@ -215,6 +237,7 @@ public class Minimax
     	while(gs != null)
     	{
     		gs.printTurnSequence();
+    		System.out.println("TURN:" + parseTurnSequence(gs.getTurnSequence()));
     		gs = gs.getNextChoice();
     	}
     }

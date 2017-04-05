@@ -339,6 +339,19 @@ public class GameState
         }
     }
     
+  //checks to see if a GameState is equal to another 
+  	public boolean equals(GameState gs)
+  	{
+  		for(int i = 0; i < this.size; i++)
+  		{
+  			if(this.board[i] != gs.getBoard()[i])
+  			{
+  				return false;
+  			}
+  		}
+  		return true;
+  	}
+    
     //prints turn sequence to the console
     public void printTurnSequence()
     {
