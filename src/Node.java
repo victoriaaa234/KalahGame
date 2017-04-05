@@ -1,3 +1,5 @@
+/*Obsolete*/
+
 import java.util.ArrayList;
 
 public class Node

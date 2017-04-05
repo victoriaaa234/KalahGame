@@ -1,3 +1,5 @@
+/*Obsolete*/
+
 import java.util.*;
 public class TestGame2{
 
