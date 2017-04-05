@@ -25,6 +25,14 @@ public class Minimax {
         long totalTime = endTime - startTime;
         System.out.println("total run time : "+totalTime+" miliseconds");
     }
+	/*if AI is player 2 :returns true AI should steal, false if doesnt need to
+	  if AI is player 1 : TODO: pick a gamestate thats not hte worst or the best*/
+	public static boolean pieRuleSteal(GameState opponentMove,GameState bestMove, boolean player,){
+		if(!player){
+			return opponentMove.equals(bestMove);
+		}
+		
+	}
     
     /*set new game state and calculate more depth of min max */
     public static GameState setNewGameState(GameState root) {
