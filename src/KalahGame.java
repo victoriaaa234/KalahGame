@@ -3,7 +3,6 @@ public class KalahGame
 {
 	private int[] kalahBoard;
 	private int[] endZoneIdx;
-	private GameState gameAI;
 
 	private KalahGame(int numHouses)
 	{
@@ -25,7 +24,6 @@ public class KalahGame
 			kalahBoard[i] = numSeedsPerHouse;
 			kalahBoard[i + endZoneIdx[0] + 1] = numSeedsPerHouse;
 		}
-		gameAI = new GameState(numHouses, numSeedsPerHouse);
 	}
 
 	public KalahGame(int numHouses, int[] numSeeds)
@@ -37,7 +35,6 @@ public class KalahGame
 			kalahBoard[i] = numSeeds[i];
 			kalahBoard[i + endZoneIdx[0] + 1] = numSeeds[i];
 		}
-		gameAI = new GameState(numHouses, numSeeds);
 	}
 	
 	public KalahGame(KalahGame toCopy)
@@ -47,19 +44,6 @@ public class KalahGame
 		
 		System.arraycopy(toCopy.kalahBoard, 0, this.kalahBoard, 0, toCopy.kalahBoard.length);
 		System.arraycopy(toCopy.endZoneIdx, 0, this.endZoneIdx, 0, toCopy.endZoneIdx.length);
-	}
-
-	public void createTree(int playerIdx)
-	{
-		boolean endGame = true;
-		if(playerIdx == 1)
-		{
-			endGame = false;
-		}
-		Minimax.treeHelper(gameAI, 6, endGame);
-		Minimax.calcMinMax(gameAI, endGame);
-		String turnSequence = gameAI.getNextChoice().getTurnSequence();
-		String turn = Minimax.parseTurnSequence(turnSequence);
 	}
 	
 	// NOTE(Drew): Uses return codes

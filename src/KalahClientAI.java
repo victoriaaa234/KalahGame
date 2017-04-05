@@ -27,7 +27,27 @@ public class KalahClientAI extends KalahClient
 	{
 		this.serverAddress = serverAddress;
 	}
-
+	
+	protected void gotOpponentMove(String moves) {
+		super.gotOpponentMove(moves);
+	}
+	
+	public void createTree(GameState game, int playerIdx)
+	{
+		boolean endGame = true;
+		if(playerIdx == 1)
+		{
+			endGame = false;
+		}
+		Minimax.treeHelper(game, 6, endGame);
+		Minimax.calcMinMax(game, endGame);
+	}
+	
+//	public void getTurn() {
+//		String turnSequence = game.getNextChoice().getTurnSequence();
+//		String turn = Minimax.parseTurnSequence(turnSequence);
+//	}
+	
 	@Override
 	protected void run()
 	{
@@ -83,11 +103,6 @@ public class KalahClientAI extends KalahClient
 					System.out.println("Restarting the AI.");
 					return;
 				}
-				else if (line.startsWith("BEGIN"))
-				{
-					// TODO(): We can start running the game now
-					System.out.println("DEBUG -- Got begin message.");
-				}
 				else if (line.startsWith("WELCOME"))
 				{
 					// TODO(): We've connected and we're talking to server - we need to wait for info
@@ -98,7 +113,6 @@ public class KalahClientAI extends KalahClient
 				{
 					// TODO(): Parse info and initialize the "kalahGame" object.
 					// TODO(): Run all game operations through "kalahGame" so server/client stay in sync
-					// TODO(): Still need to wait for "BEGIN" command before the game can run
 					System.out.println("DEBUG -- Got info message.");
 				}
 				else if (line.startsWith("OK"))
