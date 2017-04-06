@@ -77,7 +77,10 @@ public class KalahGame
 					{
 						--i;
 					}
-					kalahBoard[boardIdx]++;
+					else
+					{
+						kalahBoard[boardIdx]++;
+					}
 				}
 
 				int finishIdx = boardIdx - 1;
