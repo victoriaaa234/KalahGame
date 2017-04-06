@@ -276,7 +276,7 @@ public class KalahClientAI extends KalahClient
 						System.out.println("Returning to launch screen.");
 						return;
 					}
-					else if (needsInfo)
+					else if (needsInfo && !needsBegin)
 					{
 						System.out.println("DEBUG -- Got info.");
 						if (gotInfoMessage(line))
