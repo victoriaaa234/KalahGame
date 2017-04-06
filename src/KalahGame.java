@@ -53,6 +53,7 @@ public class KalahGame
 	public int executeMove(int idx, int playerIdx)
 	{
 		int result = 0;
+		int opponentIdx = (playerIdx + 1) % 2;
 		boolean bonusMove = false;
 
 		if (idx < endZoneIdx[0])
@@ -71,15 +72,21 @@ public class KalahGame
 
 				for (int i = 0; i < numSeeds; boardIdx = (boardIdx + 1) % (endZoneIdx[1] + 1), ++i)
 				{
+					// NOTE(Drew): Don't put seeds into opponent's end zone
+					if (boardIdx == endZoneIdx[opponentIdx])
+					{
+						--i;
+					}
 					kalahBoard[boardIdx]++;
 				}
 
 				int finishIdx = boardIdx - 1;
 				if (finishIdx == -1)
 				{
-					finishIdx = endZoneIdx[0];
+					finishIdx = endZoneIdx[0]; // NOTE(Drew): Fixes edge case movement issue
 				}
 
+				// NOTE(Drew): Handle assigning bonus moves
 				if (playerIdx == 0)
 				{
 					if (finishIdx == endZoneIdx[0])
@@ -101,19 +108,18 @@ public class KalahGame
 					}
 				}
 
+				// NOTE(Drew): Handle war scenarios
 				if (kalahBoard[finishIdx] == 1)
 				{
-//					System.out.println("DEBUG -- Potential War!");
 					if (playerIdx == 0)
 					{
 						if (finishIdx < endZoneIdx[0])
 						{
-//							System.out.println("DEBUG -- Executing war!");
-							int opponentIdx = (endZoneIdx[0] - finishIdx) * 2 + finishIdx;
-							if (kalahBoard[opponentIdx] > 0)
+							int oppositeIdx = (endZoneIdx[0] - finishIdx) * 2 + finishIdx;
+							if (kalahBoard[oppositeIdx] > 0)
 							{
-								kalahBoard[endZoneIdx[0]] += kalahBoard[opponentIdx] + 1;
-								kalahBoard[opponentIdx] = 0;
+								kalahBoard[endZoneIdx[0]] += kalahBoard[oppositeIdx] + 1;
+								kalahBoard[oppositeIdx] = 0;
 								kalahBoard[finishIdx] = 0;
 							}
 						}
@@ -122,12 +128,11 @@ public class KalahGame
 					{
 						if (finishIdx > endZoneIdx[0] && finishIdx != endZoneIdx[1])
 						{
-//							System.out.println("DEBUG -- Executing war!");
-							int opponentIdx = finishIdx - (finishIdx - endZoneIdx[0]) * 2;
-							if (kalahBoard[opponentIdx] > 0)
+							int oppositeIdx = finishIdx - (finishIdx - endZoneIdx[0]) * 2;
+							if (kalahBoard[oppositeIdx] > 0)
 							{
-								kalahBoard[endZoneIdx[1]] += kalahBoard[opponentIdx] + 1;
-								kalahBoard[opponentIdx] = 0;
+								kalahBoard[endZoneIdx[1]] += kalahBoard[oppositeIdx] + 1;
+								kalahBoard[oppositeIdx] = 0;
 								kalahBoard[finishIdx] = 0;
 							}
 						}
@@ -237,8 +242,10 @@ public class KalahGame
 		boolean playerSideEmpty = isSideEmpty(0);
 		boolean opponentSideEmpty = isSideEmpty(1);
 
+		// NOTE(Drew): If one of the sides is empty, the game is over
 		result = playerSideEmpty || opponentSideEmpty;
 
+		// NOTE(Drew): If player is empty, move all opponent seeds to opponent end zone
 		if (playerSideEmpty && !opponentSideEmpty)
 		{
 			for (int i = endZoneIdx[0] + 1; i < endZoneIdx[1]; ++i)
@@ -248,6 +255,7 @@ public class KalahGame
 			}
 		}
 
+		// NOTE(Drew): If opponent is empty, move all player seeds to player end zone
 		if (opponentSideEmpty && !playerSideEmpty)
 		{
 			for (int i = 0; i < endZoneIdx[0]; ++i)
