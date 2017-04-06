@@ -74,13 +74,17 @@ public class KalahClientAI extends KalahClient
 			// change endGame too
 //		}
 		
+		AIMove();
+		turnAI = false;
+	}
+	
+	public void AIMove() {
 		if(gameAI.next.isEmpty() && !Minimax.getGameOverState()) {
 			createTree(gameAI);
 		}
 		writeToServer(Minimax.parseTurnSequence(gameAI.getNextChoice().getTurnSequence()));
 		gameAI = gameAI.getNextChoice();
 		System.out.println("best move: " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
-		turnAI = false;
 	}
 	
 	public void createTree(GameState game)
@@ -249,7 +253,11 @@ public class KalahClientAI extends KalahClient
 						System.out.println("Returning to launch screen.");
 						return;
 					}
-					System.out.println("DEBUG -- Got begin message.");		
+					System.out.println("DEBUG -- Got begin message.");	
+					if(turnAI) {
+						AIMove();
+						turnAI = false;
+					}
 				}
 				else if (line.startsWith("WELCOME"))
 				{
@@ -276,7 +284,7 @@ public class KalahClientAI extends KalahClient
 						System.out.println("Returning to launch screen.");
 						return;
 					}
-					else if (needsInfo && !needsBegin)
+					else if (needsInfo && needsBegin)
 					{
 						System.out.println("DEBUG -- Got info.");
 						if (gotInfoMessage(line))
