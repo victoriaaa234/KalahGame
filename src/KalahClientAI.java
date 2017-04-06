@@ -20,7 +20,6 @@ public class KalahClientAI extends KalahClient
 	protected GameState gameAI;
 	protected boolean madeFirstMove;
 	boolean endGame;
-	protected KalahGame game;
 
 
 	public static void main(String[] args) throws Exception
@@ -48,7 +47,6 @@ public class KalahClientAI extends KalahClient
 		needsInfo = false;
 		turnAI = false;
 		madeFirstMove = false;
-		game = null;
 	}
 	
 	protected void gotOpponentMove(String moves) {
@@ -58,6 +56,7 @@ public class KalahClientAI extends KalahClient
 			{
 				if(Minimax.parseTurnSequence(game.getTurnSequence()).equals(moves)) {
 					gameAI = game;
+					break;
 				}
 			}
 		}
@@ -80,7 +79,7 @@ public class KalahClientAI extends KalahClient
 		}
 		writeToServer(Minimax.parseTurnSequence(gameAI.getNextChoice().getTurnSequence()));
 		gameAI = gameAI.getNextChoice();
-		System.out.println(Minimax.parseTurnSequence(gameAI.getTurnSequence()));
+		System.out.println("best move: " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
 		turnAI = false;
 	}
 	
@@ -103,11 +102,11 @@ public class KalahClientAI extends KalahClient
 				timeoutInMs = Integer.parseInt(infoMessageParts[3]);
 				String goesFirstStr = infoMessageParts[4];
 				String standardLayoutStr = infoMessageParts[5];
-				game = new KalahGame(kalahGame);
 
 				if (standardLayoutStr.equals("S"))
 				{
 					gameAI = new GameState(houseCount, seedCount);
+					kalahGame = new KalahGame(houseCount, seedCount);
 				}
 				else if (standardLayoutStr.equals("R"))
 				{
@@ -116,7 +115,7 @@ public class KalahClientAI extends KalahClient
 					{
 						rawValues[i] = Integer.parseInt(infoMessageParts[i + 6]);
 					}
-				
+					kalahGame = new KalahGame(houseCount, rawValues);
 					gameAI = new GameState(houseCount, rawValues);
 				}
 				else
@@ -277,7 +276,7 @@ public class KalahClientAI extends KalahClient
 						System.out.println("Returning to launch screen.");
 						return;
 					}
-					else if (needsInfo)
+					else if (needsInfo && !needsBegin)
 					{
 						System.out.println("DEBUG -- Got info.");
 						if (gotInfoMessage(line))
