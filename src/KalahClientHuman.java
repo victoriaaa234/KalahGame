@@ -111,9 +111,11 @@ public class KalahClientHuman extends KalahClient
 
 		for (int i = 0; i < playerSideHouses.size(); ++i)
 		{
+			// NOTE(Drew): Set up player side houses
 			KalahPitButton playerSideHouse = playerSideHouses.get(i);
 			if (potentialGame != null && KalahGame.isDifferentAtMy(kalahGame, potentialGame, i))
 			{
+				// NOTE(Drew): On hover, show potential changes
 				playerSideHouse.setText(potentialGame.getSeedCountAtMy(i) + "");
 				playerSideHouse.setForeground(Color.RED);
 			}
@@ -124,9 +126,11 @@ public class KalahClientHuman extends KalahClient
 			}
 			frame.getContentPane().add(playerSideHouse);
 
+			// NOTE(Drew): Set up opponent side houses
 			KalahPitButton opponentSideHouse = opponentSideHouses.get(i);
 			if (potentialGame != null && KalahGame.isDifferentAtOpponent(kalahGame, potentialGame, i))
 			{
+				// NOTE(Drew): On hover, show potential changes
 				opponentSideHouse.setText(potentialGame.getSeedCountAtOpponent(i) + "");
 				opponentSideHouse.setForeground(Color.RED);
 			}
@@ -141,9 +145,11 @@ public class KalahClientHuman extends KalahClient
 		
 		if (potentialGame != null && KalahGame.isDifferentInMyPit(kalahGame, potentialGame))
 		{
+			// NOTE(Drew): On hover, show potential changes
 			playerEndZone.setText(potentialGame.getSeedCountInMyPit() + "");
 			if (potentialBonusMove)
 			{
+				// NOTE(Drew): Bonus move shows up in green
 				playerEndZone.setForeground(Color.GREEN);
 			}
 			else
@@ -159,6 +165,7 @@ public class KalahClientHuman extends KalahClient
 		
 		if (potentialGame != null && KalahGame.isDifferentInOpponentPit(kalahGame, potentialGame))
 		{
+			// NOTE(Drew): On hover, show potential changes
 			opponentEndZone.setText(potentialGame.getSeedCountInOpponentPit() + "");
 			opponentEndZone.setForeground(Color.RED);
 		}
@@ -172,6 +179,7 @@ public class KalahClientHuman extends KalahClient
 		{
 			if (resetTimer)
 			{
+				// NOTE(Drew): Only reset the timer once per move
 				resetTimer = false;
 				
 				currentTime = timeoutInMs / 1000;
@@ -347,6 +355,7 @@ public class KalahClientHuman extends KalahClient
 					return false;
 				}
 
+				// NOTE(Drew): Initialize buttons and size them to fit the available space
 				int buttonSize = (frame.getWidth() - 35 - (houseCount * 5)) / (houseCount + 2);
 
 				opponentEndZone = new KalahPitButton();
@@ -369,6 +378,7 @@ public class KalahClientHuman extends KalahClient
 					myHouse.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
 					myHouse.setIndex(i);
 
+					// NOTE(Drew): Click action listeners handle moves
 					myHouse.addActionListener(new ActionListener()
 					{
 						@Override
@@ -378,6 +388,7 @@ public class KalahClientHuman extends KalahClient
 						}
 					});
 					
+					// NOTE(Drew): Hover action listeners handle move prediction
 					myHouse.addMouseListener(new MouseAdapter()
 					{
 						@Override
@@ -539,7 +550,6 @@ public class KalahClientHuman extends KalahClient
 				System.out.println("Returning to launch screen.");
 				quit();
 				return;
-//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 			catch (UnknownHostException e)
 			{
@@ -547,7 +557,6 @@ public class KalahClientHuman extends KalahClient
 				System.out.println("Returning to launch screen.");
 				quit();
 				return;
-//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 			catch (IOException e)
 			{
@@ -555,7 +564,6 @@ public class KalahClientHuman extends KalahClient
 				System.out.println("Returning to launch screen.");
 				quit();
 				return;
-//				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 
 			drawConnectingScreen();
@@ -679,7 +687,6 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawWinScreen();
-//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -693,7 +700,6 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawLoseScreen();
-//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -707,7 +713,6 @@ public class KalahClientHuman extends KalahClient
 					drawGameBoardScreen();
 
 					drawTieScreen();
-//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -717,7 +722,6 @@ public class KalahClientHuman extends KalahClient
 					System.out.println("DEBUG -- Illegal move.");
 
 					drawIllegalMoveScreen();
-//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -727,7 +731,6 @@ public class KalahClientHuman extends KalahClient
 					System.out.println("DEBUG -- Player took too long and timed out.");
 
 					drawTimedOutScreen();
-//					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;

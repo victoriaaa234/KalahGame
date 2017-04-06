@@ -33,6 +33,7 @@ public class KalahGameServer
 		{
 			try
 			{
+				// NOTE(Drew): Parses settings from a file using the designated syntax
 				File file = new File(args[0]);
 				FileReader fileReader = new FileReader(file);
 				BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -105,10 +106,22 @@ public class KalahGameServer
 			{
 				while (true)
 				{
+					// NOTE(Drew): Attempt to connect to two clients
 					KalahGameServerLogic game = new KalahGameServerLogic(numHouses, numSeedsPerHouse, randomizeLayout);
-					KalahGameServerLogic.KalahGamePlayer player0 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, true, game.getNumSeedsPerHouseStr());
-					KalahGameServerLogic.KalahGamePlayer player1 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, false, game.getNumSeedsPerHouseStr());
+					KalahGameServerLogic.KalahGamePlayer player0;
+					KalahGameServerLogic.KalahGamePlayer player1;
+					if (randomizeLayout)
+					{
+						player0 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, true, game.getNumSeedsPerHouseStr());
+						player1 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, false, game.getNumSeedsPerHouseStr());
+					}
+					else
+					{
+						player0 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, true);
+						player1 = game.new KalahGamePlayer(listener.accept(), numHouses, numSeedsPerHouse, timeoutInMs, false);
+					}
 					
+					// NOTE(Drew): If the clients aren't initialized, retry
 					if (!player0.initialized || !player1.initialized)
 					{
 						break;
@@ -143,16 +156,19 @@ class KalahGameServerLogic
 
 	private int[] numSeedsPerHouse;
 
+	// NOTE(Drew): Default constructor creates a game with 6 houses with 4 seeds each
 	public KalahGameServerLogic()
 	{
 		kalahGame = new KalahGame(6, 4);
 	}
 
+	// NOTE(Drew): This constructor is used for games with even distributions of seeds
 	public KalahGameServerLogic(int numHouses, int numSeeds)
 	{
 		kalahGame = new KalahGame(numHouses, numSeeds);
 	}
 
+	// NOTE(Drew): This constructor is used for games with a random distribution of seeds
 	public KalahGameServerLogic(int numHouses, int numSeeds, boolean randomize)
 	{
 		if (!randomize)
@@ -331,6 +347,7 @@ class KalahGameServerLogic
 		
 		public boolean initialized = false;
 
+		// This constructor is for a game with a uniform distribution of seeds
 		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, long numMsPerMove, boolean goesFirst)
 		{
 			this.socket = socket;
@@ -357,6 +374,7 @@ class KalahGameServerLogic
 			}
 		}
 
+		// This constructor is for a game with a random distribution of seeds
 		public KalahGamePlayer(Socket socket, int numHouses, int numSeeds, long numMsPerMove, boolean goesFirst, String randomValuesAsStr)
 		{
 			this.socket = socket;
@@ -393,6 +411,7 @@ class KalahGameServerLogic
 			writeToClient(location);
 			needsAck = true;
 
+			// NOTE(Drew): If the game is over, assign winners and losers
 			if (kalahGame.hasWinner())
 			{
 				if (isPlayerWinner(this))
@@ -436,6 +455,7 @@ class KalahGameServerLogic
 		{
 			try
 			{
+				// NOTE(Drew): Exchange INFO and ensure that you get the READ and send a BEGIN before entering the loop
 				writeToClient(infoString);
 
 				String clientAck = readFromClient();
@@ -450,6 +470,7 @@ class KalahGameServerLogic
 
 				while (true)
 				{
+					// NOTE(Drew): Assign timer so that players time out
 					if (this == currentPlayer)
 					{
 						this.timer = new Timer();
@@ -482,6 +503,7 @@ class KalahGameServerLogic
 							}
 							else
 							{
+								// NOTE(Drew): Errant OK could be malicious, send ILLEGAL
 								System.out.println("Received errant ack.");
 								writeToClient("ILLEGAL");
 								writeToClient("LOSER");
@@ -499,6 +521,7 @@ class KalahGameServerLogic
 								timer.cancel();
 							}
 	
+							// NOTE(Drew): Errant READY could be malicious, send ILLEGAL
 							System.out.println("Received errant ready.");
 							writeToClient("ILLEGAL");
 							writeToClient("LOSER");
@@ -514,7 +537,8 @@ class KalahGameServerLogic
 								timeoutTask.cancel();
 								timer.cancel();
 							}
-	
+							
+							// NOTE(Drew): Opponent has picked to swap sides
 							kalahGame.swapSides();
 							writeToClient("OK");
 							opponent.writeToClient("P");
@@ -530,6 +554,7 @@ class KalahGameServerLogic
 	
 							if (!needsAck)
 							{
+								// NOTE(Drew): If we don't need an ack, and we haven't matched, its a move
 								int result = parseMove(this, line);
 	
 								if (result != 0)
