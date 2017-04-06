@@ -30,6 +30,10 @@ public class Minimax
         System.out.println("total run time : " + totalTime + " miliseconds");
     }
     
+    public static boolean getGameOverState() {
+    	return gameOver;
+    }
+    
     /*if AI is player 2 :returns true AI should steal, false if doesnt need to
       if AI is player 1 : TODO: pick a gamestate thats not hte worst or the best*/
     
@@ -86,6 +90,16 @@ public class Minimax
         
     	StringBuilder finalStringBuilder = new StringBuilder(turn.length() + 1);
     	String[] finalWords = turn.split(" ");
+    	int[] finalIntegers = new int[finalWords.length];
+    	for(int i = 0; i < finalWords.length; i++) {
+    	    finalIntegers[i] = Integer.parseInt(finalWords[i]);
+    	}
+    	for(int i = 0; i < finalIntegers.length; i++) {
+    		finalIntegers[i] = finalIntegers[i] - 1;
+    	}
+    	for(int i = 0; i < finalIntegers.length; i++) {
+    		finalWords[i] = Integer.toString(finalIntegers[i]);
+    	}
     	for (int i = finalWords.length - 1; i >= 0; i--)
     	{
     		finalStringBuilder.append(finalWords[i]).append(' ');

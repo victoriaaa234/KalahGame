@@ -1,10 +1,27 @@
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 
+import javax.swing.SwingConstants;
+
 public class KalahClientAI extends KalahClient
 {
 	protected String serverAddress;
+	protected boolean needsAck;
+	protected boolean needsBegin;
+	protected boolean needsInfo;
+	protected long timeoutInMs;
+	protected boolean turnAI;
+	protected GameState gameAI;
+	protected boolean madeFirstMove;
+	boolean endGame;
+	protected KalahGame game;
+
 
 	public static void main(String[] args) throws Exception
 	{
@@ -26,21 +43,127 @@ public class KalahClientAI extends KalahClient
 	public KalahClientAI(String serverAddress)
 	{
 		this.serverAddress = serverAddress;
+		needsAck = false;
+		needsBegin = false;
+		needsInfo = false;
+		turnAI = false;
+		madeFirstMove = false;
+		game = null;
 	}
 	
 	protected void gotOpponentMove(String moves) {
-		super.gotOpponentMove(moves);
+		if(!turnAI) {
+			super.gotOpponentMove(moves);
+			for(GameState game : gameAI.next)
+			{
+				if(Minimax.parseTurnSequence(game.getTurnSequence()).equals(moves)) {
+					gameAI = game;
+				}
+			}
+		}
+		turnAI = true;
+
+		//Pie rule
+//		if (!madeFirstMove)
+//		{
+//			gotPieMove() {
+//			writeToServer("P");
+//			turnAI = false;
+//			needsAck = true;
+//			kalahGame.swapSides();
+//			madeFirstMove = true;
+			// change endGame too
+//		}
+		
+		if(gameAI.next.isEmpty() && !Minimax.getGameOverState()) {
+			createTree(gameAI);
+		}
+		writeToServer(Minimax.parseTurnSequence(gameAI.getNextChoice().getTurnSequence()));
+		gameAI = gameAI.getNextChoice();
+		System.out.println(Minimax.parseTurnSequence(gameAI.getTurnSequence()));
+		turnAI = false;
 	}
 	
-	public void createTree(GameState game, int playerIdx)
+	public void createTree(GameState game)
 	{
-		boolean endGame = true;
-		if(playerIdx == 1)
-		{
-			endGame = false;
-		}
 		Minimax.treeHelper(game, 6, endGame);
 		Minimax.calcMinMax(game, endGame);
+	}
+	
+	protected boolean gotInfoMessage(String message)
+	{
+		String[] infoMessageParts = message.split(" ");
+
+		if (infoMessageParts[0].equals("INFO"))
+		{
+			try
+			{
+				int houseCount = Integer.parseInt(infoMessageParts[1]);
+				int seedCount = Integer.parseInt(infoMessageParts[2]);
+				timeoutInMs = Integer.parseInt(infoMessageParts[3]);
+				String goesFirstStr = infoMessageParts[4];
+				String standardLayoutStr = infoMessageParts[5];
+				game = new KalahGame(kalahGame);
+
+				if (standardLayoutStr.equals("S"))
+				{
+					gameAI = new GameState(houseCount, seedCount);
+				}
+				else if (standardLayoutStr.equals("R"))
+				{
+					int[] rawValues = new int[houseCount];
+					for (int i = 0; i < houseCount; ++i)
+					{
+						rawValues[i] = Integer.parseInt(infoMessageParts[i + 6]);
+					}
+				
+					gameAI = new GameState(houseCount, rawValues);
+				}
+				else
+				{
+					System.out.println("Invalid info message from server.");
+					System.out.println("Returning to the launch screen.");
+					return false;
+				}
+				
+				if (goesFirstStr.equals("F"))
+				{
+					turnAI = true;
+					endGame = true;
+					createTree(gameAI);
+					System.out.println("DEBUG -- AI Turn");
+				}
+				else if (goesFirstStr.equals("S"))
+				{
+					turnAI = false;
+					endGame = false;
+					createTree(gameAI);
+					System.out.println("DEBUG -- Not AI Turn");
+				}
+				else
+				{
+					System.out.println("Invalid info message from server.");
+					System.out.println("Returning to the launch screen.");
+					return false;
+				}
+			}
+			catch (Exception e)
+			{
+				System.out.println("Invalid info message from server.");
+				System.out.println("Returning to the launch screen.");
+				return false;
+			}
+		}
+		else
+		{
+			System.out.println("Invalid info message from server.");
+			System.out.println("Returning to the launch screen.");
+			return false;
+		}
+
+		writeToServer("READY");
+		
+		return true;
 	}
 	
 //	public void getTurn() {
@@ -105,32 +228,89 @@ public class KalahClientAI extends KalahClient
 				}
 				else if (line.startsWith("BEGIN"))		
 				{		
-					 // TODO(): We can start running the game now		
-					 System.out.println("DEBUG -- Got begin message.");		
+					if (needsAck)
+					{
+						System.out.println("Got begin instead of an ack.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					else if (needsInfo)
+					{
+						System.out.println("Got begin before got info.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					else if (needsBegin)
+					{
+						needsBegin = false;
+					}
+					else
+					{
+						System.out.println("Received duplicate begin.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					System.out.println("DEBUG -- Got begin message.");		
 				}
 				else if (line.startsWith("WELCOME"))
 				{
-					// TODO(): We've connected and we're talking to server - we need to wait for info
-					// TODO(): Ensure we don't get any random data between now and INFO message
+					if (needsAck)
+					{
+						System.out.println("Got welcome instead of an ack.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					else
+					{
+						System.out.println("DEBUG -- Got welcome.");
+						needsInfo = true;
+						needsBegin = true;
+					}
 					System.out.println("Waiting for other player to connect.");
 				}
 				else if (line.startsWith("INFO"))
 				{
-					// TODO(): Parse info and initialize the "kalahGame" object.
 					// TODO(): Run all game operations through "kalahGame" so server/client stay in sync
-					// TODO(): Still need to wait for "BEGIN" command before the game can run
+					if (needsAck)
+					{
+						System.out.println("Got new information instead of an ack.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					else if (needsInfo)
+					{
+						System.out.println("DEBUG -- Got info.");
+						if (gotInfoMessage(line))
+						{
+							needsInfo = false;
+						}
+						else
+						{
+							System.out.println("Received an errant info packet.");
+							System.out.println("Returning to launch screen.");
+							return;
+						}
+					}
+					else
+					{
+						System.out.println("Got new information after initialization.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
 					System.out.println("DEBUG -- Got info message.");
 				}
 				else if (line.startsWith("OK"))
 				{
-					// TODO(): Make sure you get ack
 					// TODO(): A missing ack is probably an issue that warrants a "disconnected" message
+
+					needsAck = false;
 					System.out.println("DEBUG -- Got ack.");
 				}
 				else if (line.startsWith("WINNER"))
 				{
 					// TODO(): AI doesn't care if it won/lost/tied, just that the game is over
 					// TODO(): We may want to merge or keep separate for custom printouts
+					
 					System.out.println("AI won the Kalah game.");
 					System.out.println("Restarting the AI.");
 					return;
@@ -174,7 +354,6 @@ public class KalahClientAI extends KalahClient
 				}
 				else
 				{
-					// TODO(): Opponent made a move, update the AI (override getOpponentMove)
 					System.out.println("DEBUG -- Got move: " + line);
 					gotOpponentMove(line);
 				}
