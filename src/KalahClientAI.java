@@ -60,10 +60,9 @@ public class KalahClientAI extends KalahClient
 	
 	protected void gotOpponentMove(String moves) {
 		if(!turnAI) {
-			System.out.println("what");
 			super.gotOpponentMove(moves);
 			if(gameAI.next.isEmpty()) {
-				System.out.println("WTF WHY");
+				System.out.println("EMPTY");
 			}
 			else {
 				for(GameState game : gameAI.next)
@@ -71,7 +70,6 @@ public class KalahClientAI extends KalahClient
 					System.out.println("w"+moves+"y");
 					System.out.println("z"+Minimax.parseTurnSequence(game.getTurnSequence()) + "y");
 					if(Minimax.parseTurnSequence(game.getTurnSequence()).equals(moves)) {
-						System.out.println("HELLO");
 						if(!madeFirstMove) {
 							setOpponentMoveState(game);
 							setOpponentPreviousState(gameAI.getNextChoice());
@@ -79,7 +77,6 @@ public class KalahClientAI extends KalahClient
 						gameAI = game;
 						break;
 					}
-					System.out.println("ASLKDF");
 				}
 			}
 		}
