@@ -1,13 +1,8 @@
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
-
-import javax.swing.SwingConstants;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class KalahClientAI extends KalahClient
 {
@@ -17,11 +12,25 @@ public class KalahClientAI extends KalahClient
 	protected boolean needsInfo;
 	protected long timeoutInMs;
 	protected boolean turnAI;
-	protected GameState gameAI;
+	
+	public static GameState gameAI;
+	public static GameState currentAI;
 	protected boolean madeFirstMove;
-	boolean endGame;
+	private boolean endGame;
+	//For pie rule
+	public static GameState opponentMove;
+	public static GameState opponentPreviousState;
 
-
+    public void setNewGameState(GameState game)
+    {
+        gameAI = new GameState(game);
+    }
+    public void setOpponentMoveState(GameState game) {
+    	opponentMove = new GameState(game);
+    }
+    public void setOpponentPreviousState(GameState game) {
+    	opponentPreviousState = new GameState(game);
+    }
 	public static void main(String[] args) throws Exception
 	{
 		while (true)
@@ -51,46 +60,104 @@ public class KalahClientAI extends KalahClient
 	
 	protected void gotOpponentMove(String moves) {
 		if(!turnAI) {
+			System.out.println("what");
 			super.gotOpponentMove(moves);
-			for(GameState game : gameAI.next)
-			{
-				if(Minimax.parseTurnSequence(game.getTurnSequence()).equals(moves)) {
-					gameAI = game;
-					break;
+			if(gameAI.next.isEmpty()) {
+				System.out.println("WTF WHY");
+			}
+			else {
+				for(GameState game : gameAI.next)
+				{
+					System.out.println("w"+moves+"y");
+					System.out.println("z"+Minimax.parseTurnSequence(game.getTurnSequence()) + "y");
+					if(Minimax.parseTurnSequence(game.getTurnSequence()).equals(moves)) {
+						System.out.println("HELLO");
+						if(!madeFirstMove) {
+							setOpponentMoveState(game);
+							setOpponentPreviousState(gameAI.getNextChoice());
+						}
+						gameAI = game;
+						break;
+					}
+					System.out.println("ASLKDF");
 				}
 			}
 		}
 		turnAI = true;
-
-		//Pie rule
-//		if (!madeFirstMove)
-//		{
-//			gotPieMove() {
-//			writeToServer("P");
-//			turnAI = false;
-//			needsAck = true;
-//			kalahGame.swapSides();
-//			madeFirstMove = true;
-			// change endGame too
-//		}
 		
 		AIMove();
 		turnAI = false;
 	}
 	
-	public void AIMove() {
-		if(gameAI.next.isEmpty() && !Minimax.getGameOverState()) {
-			createTree(gameAI);
+	public void firstMoveAI() {
+		int choice;
+		if(gameAI.next.isEmpty()) {
+			createTree();
 		}
-		writeToServer(Minimax.parseTurnSequence(gameAI.getNextChoice().getTurnSequence()));
-		gameAI = gameAI.getNextChoice();
-		System.out.println("best move: " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
+		
+		ArrayList<Integer> value = new ArrayList<Integer>();
+		for(GameState g : gameAI.next) {
+			value.add(g.getV());
+		}
+		Collections.sort(value);
+		if(value.size() % 2 == 0) {
+			//even number of possible moves
+			//AI gets the value that is less optimal than average so that if
+			//player chooses pie rule, they will be at less optimal state
+			choice = value.get((value.size()/2) - 1);
+		}
+		else {
+			//odd number of possible moves
+			//AI chooses the average
+			choice = value.get(value.size()/2);
+		}
+		for(GameState g : gameAI.next) {
+			//first occurrence of this move
+			if(g.getV() == choice) {
+				writeToServer(Minimax.parseTurnSequence(g.getTurnSequence()));
+				gameAI = g;
+				break;
+			}
+		}
 	}
 	
-	public void createTree(GameState game)
+	public void AIMove() {
+		
+		if(gameAI.next.isEmpty() && !Minimax.getGameOverState()) {
+			System.out.println("DEBUG: Creating new tree.");
+			createTree();
+		}
+
+		//Pie rule
+//		if (!madeFirstMove && endGame)
+//		{
+//			if(Minimax.pieRuleSteal(opponentMove, opponentPreviousState, !endGame)) {
+//				turnAI = false;
+//				needsAck = true;
+//				madeFirstMove = true;
+//				endGame = !endGame;
+//				writeToServer("P");
+//			}
+//		}
+		//else {
+			//System.out.println("all possible moves");
+			//int iter = 0;
+//			for(GameState g : gameAI.next) {
+//				System.out.println(iter + Minimax.parseTurnSequence(g.getTurnSequence()));
+//				System.out.println(iter+ " get score: " + g.getV());
+//				iter++;
+//			}
+			writeToServer(Minimax.parseTurnSequence(gameAI.getNextChoice().getTurnSequence()));
+			setNewGameState(gameAI.getNextChoice());
+//			System.out.println("best move: " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
+//			System.out.println("whole best move: " + gameAI.getTurnSequence());
+		//}
+	}
+	
+	public void createTree()
 	{
-		Minimax.treeHelper(game, 6, endGame);
-		Minimax.calcMinMax(game, endGame);
+		Minimax.treeHelper(gameAI, 6, endGame);
+		Minimax.calcMinMax(gameAI, endGame);
 	}
 	
 	protected boolean gotInfoMessage(String message)
@@ -124,6 +191,7 @@ public class KalahClientAI extends KalahClient
 				}
 				else
 				{
+					System.out.println("once");
 					System.out.println("Invalid info message from server.");
 					System.out.println("Returning to the launch screen.");
 					return false;
@@ -133,18 +201,19 @@ public class KalahClientAI extends KalahClient
 				{
 					turnAI = true;
 					endGame = true;
-					createTree(gameAI);
+					createTree();
 					System.out.println("DEBUG -- AI Turn");
 				}
 				else if (goesFirstStr.equals("S"))
 				{
 					turnAI = false;
-					endGame = false;
-					createTree(gameAI);
+					endGame = true;
+					createTree();
 					System.out.println("DEBUG -- Not AI Turn");
 				}
 				else
 				{
+					System.out.println("twice");
 					System.out.println("Invalid info message from server.");
 					System.out.println("Returning to the launch screen.");
 					return false;
@@ -152,6 +221,7 @@ public class KalahClientAI extends KalahClient
 			}
 			catch (Exception e)
 			{
+				e.printStackTrace();
 				System.out.println("Invalid info message from server.");
 				System.out.println("Returning to the launch screen.");
 				return false;
@@ -159,6 +229,7 @@ public class KalahClientAI extends KalahClient
 		}
 		else
 		{
+			System.out.println("trice");
 			System.out.println("Invalid info message from server.");
 			System.out.println("Returning to the launch screen.");
 			return false;
@@ -229,6 +300,22 @@ public class KalahClientAI extends KalahClient
 					System.out.println("Restarting the AI.");
 					return;
 				}
+				else if (line.startsWith("WELCOME"))
+				{
+					if (needsAck)
+					{
+						System.out.println("Got welcome instead of an ack.");
+						System.out.println("Returning to launch screen.");
+						return;
+					}
+					else
+					{
+						System.out.println("DEBUG -- Got welcome.");
+						needsInfo = true;
+						needsBegin = true;
+					}
+					System.out.println("Waiting for other player to connect.");
+				}
 				else if (line.startsWith("BEGIN"))		
 				{		
 					if (needsAck)
@@ -255,25 +342,11 @@ public class KalahClientAI extends KalahClient
 					}
 					System.out.println("DEBUG -- Got begin message.");	
 					if(turnAI) {
+						//firstMoveAI();
 						AIMove();
+						madeFirstMove = true;
 						turnAI = false;
 					}
-				}
-				else if (line.startsWith("WELCOME"))
-				{
-					if (needsAck)
-					{
-						System.out.println("Got welcome instead of an ack.");
-						System.out.println("Returning to launch screen.");
-						return;
-					}
-					else
-					{
-						System.out.println("DEBUG -- Got welcome.");
-						needsInfo = true;
-						needsBegin = true;
-					}
-					System.out.println("Waiting for other player to connect.");
 				}
 				else if (line.startsWith("INFO"))
 				{
@@ -358,6 +431,11 @@ public class KalahClientAI extends KalahClient
 					// TODO(): Opponent made a pie move, it is now the AI's turn to move
 					System.out.println("DEBUG -- Player chose pie rule.");
 					gotPieMove();
+					endGame = !endGame;
+					
+					turnAI = true;
+					AIMove();
+					turnAI = false;
 				}
 				else
 				{

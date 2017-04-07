@@ -1,6 +1,5 @@
 import java.util.*;
 import java.io.*;
-import java.lang.*;
 
 public class GameState 
 {
@@ -44,6 +43,11 @@ public class GameState
                 board[i] = 0;
             }
         }
+        this.score = 0;
+        this.min_max = 0;
+        this.nextChoice = null;
+        this.turnSequence = "";
+        this.v = 0;
         this.holes = holes; 
         this.seeds = seeds;
         this.isEndGame = false;
@@ -65,18 +69,38 @@ public class GameState
     	board[holes + 1] = 0;
     	this.holes = holes;
     	this.seeds = totalSeeds/holes;
+    	this.score = 0;
+    	this.min_max = 0;
+    	this.v = 0;
+    	this.nextChoice = null;
+    	this.turnSequence = "";
     	this.isEndGame = false;
     }
     
     public GameState(GameState prev)
+    //currently doesn't work...
     {
-        next = new ArrayList<GameState>();
+    	if(prev.getNextGameStates().isEmpty()) {
+    		next = new ArrayList<GameState>();
+    	}
+    	else {
+    		for(GameState g : prev.getNextGameStates()) {
+    			next = new ArrayList<GameState>();
+    			next.add(new GameState(g));
+    		}
+    	}
+    	this.score = prev.getScore();
         this.holes = prev.getHoles(); 
         this.seeds = prev.getSeeds();
         this.turnSequence = prev.getTurnSequence();
         this.min_max = prev.getMinMax();
-        this.nextChoice = prev.nextChoice;
-         size = 2*holes + 2;
+        if(prev.getNextChoice() != null) {
+        	this.setNextChoice(prev.getNextChoice());
+        }
+        else {
+        	this.nextChoice = null;
+        }
+        size = prev.getSize();
         board = new int[size];
         for(int i = 0; i < size; i++){
             board[i] = prev.getBoard()[i];
@@ -86,6 +110,9 @@ public class GameState
     }
     
     //get methods
+    public ArrayList<GameState> getNextGameStates() {
+    	return next;
+    }
     public boolean getEndGame() 
     {
         return isEndGame;

@@ -37,12 +37,14 @@ public class Minimax
     /*if AI is player 2 :returns true AI should steal, false if doesnt need to
       if AI is player 1 : TODO: pick a gamestate thats not hte worst or the best*/
     
-//    public static boolean pieRuleSteal(GameState opponentMove, GameState bestMove, boolean player)
-//    {
-//    	if(!player){
-//    		return opponentMove.equals(bestMove);
-//    	}
-//    }
+    public static boolean pieRuleSteal(GameState opponentMove, GameState bestMove, boolean player)
+    {
+    	if(!player)
+    	{
+    		return opponentMove.equals(bestMove);
+    	}
+    	return false;
+    }
     
     /*parses turn sequence for values*/
     public static String parseTurnSequence(String turnSequence) 
