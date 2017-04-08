@@ -1,6 +1,5 @@
 import java.util.*;
 import java.io.*;
-import java.lang.*;
 
 public class GameState 
 {
@@ -15,6 +14,8 @@ public class GameState
     private String turnSequence;
     private int v;
     private boolean isEndGame;
+    private boolean endP1;
+    private boolean endP2;
     
     public GameState()
     {
@@ -44,6 +45,11 @@ public class GameState
                 board[i] = 0;
             }
         }
+        //this.score = 0;
+        //this.min_max = 0;
+        //this.nextChoice = null;
+        //this.turnSequence = "";
+        //this.v = 0;
         this.holes = holes; 
         this.seeds = seeds;
         this.isEndGame = false;
@@ -65,27 +71,63 @@ public class GameState
     	board[holes + 1] = 0;
     	this.holes = holes;
     	this.seeds = totalSeeds/holes;
+    	//this.score = 0;
+    	//this.min_max = 0;
+    	//this.v = 0;
+    	//this.nextChoice = null;
+    	//this.turnSequence = "";
     	this.isEndGame = false;
     }
     
     public GameState(GameState prev)
+    //currently doesn't work...
     {
+//    	if(prev.getNextGameStates().isEmpty()) {
+//    		next = new ArrayList<GameState>();
+//    	}
+//    	else {
+//    		for(GameState g : prev.getNextGameStates()) {
+//    			next = new ArrayList<GameState>();
+//    			next.add(new GameState(g));
+//    		}
+//    	}
+//    	this.score = prev.getScore();
+//        this.holes = prev.getHoles(); 
+//        this.seeds = prev.getSeeds();
+//        this.turnSequence = prev.getTurnSequence();
+//        this.min_max = prev.getMinMax();
+//        if(prev.getNextChoice() != null) {
+//        	this.setNextChoice(prev.getNextChoice());
+//        }
+//        else {
+//        	this.nextChoice = null;
+//        }
+//        size = prev.getSize();
+//        board = new int[size];
+//        for(int i = 0; i < size; i++){
+//            board[i] = prev.getBoard()[i];
+//        }
+//        this.v = prev.getV();
+//        this.isEndGame = prev.getEndGame();
         next = new ArrayList<GameState>();
         this.holes = prev.getHoles(); 
-        this.seeds = prev.getSeeds();
-        this.turnSequence = prev.getTurnSequence();
-        this.min_max = prev.getMinMax();
-        this.nextChoice = prev.nextChoice;
-         size = 2*holes + 2;
+        this.seeds = prev.getSeeds();;
+        this.turnSequence=prev.getTurnSequence();
+        this.min_max=prev.getMinMax();
+        this.nextChoice=prev.nextChoice;
+         size = 2*holes+2;
         board = new int[size];
-        for(int i = 0; i < size; i++){
-            board[i] = prev.getBoard()[i];
+        for(int i =0; i<size; i++){
+            board[i]= prev.getBoard()[i];
         }
         this.v = prev.getV();
         this.isEndGame = prev.getEndGame();
     }
     
     //get methods
+    public ArrayList<GameState> getNextGameStates() {
+    	return next;
+    }
     public boolean getEndGame() 
     {
         return isEndGame;
@@ -151,6 +193,8 @@ public class GameState
     public void setNextChoice(GameState g)
     {
         nextChoice= new GameState(g);
+//    	nextChoice = new GameState();
+//    	nextChoice = g;
     }
     public void setV(int value)
     {
@@ -190,10 +234,8 @@ public class GameState
     }
    
     //check if end of game
-    public boolean endGame(boolean player)
+    public boolean endGameP1()
     {
-        if(player)
-        {
             for(int i = 1; i <= holes; i++)
             {
                 if(board[i] != 0)
@@ -201,21 +243,27 @@ public class GameState
                     return false;
                 }
             }
+            endP1 = true;
             return true;
-        }
-        else
-        {
-            for(int i = holes + 2; i <= size-1; i++)
-            {
-                if(board[i] != 0)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        
     }
     
+    public boolean endGameP2()
+    {
+        for(int i = holes + 2; i <= size-1; i++)
+        {
+            if(board[i] != 0)
+            {
+                return false;
+            }
+        }
+        endP2 = true;
+        return true;
+    }
+    
+    public boolean endGame(boolean player) {
+    	return endGameP1() || endGameP2();
+    }
     //-1 if error 0 if you need to repeat  1 if move valid
     //player1 = true player 2= false
     public int turn(int choice, boolean player, boolean end, String ts)
@@ -260,13 +308,29 @@ public class GameState
             }
             if(endGame(end))
             {
-                int remainingSeeds = 0;
-                for(int i = holes + 2; i <= size - 1; i++)
-                {
-                    remainingSeeds += board[i]; 
-                    board[i] = 0;
-                }
-                board[0] += remainingSeeds;
+            	if(endP1) {
+                    int remainingSeeds = 0;
+                    for(int i = holes + 2; i <= size - 1; i++)
+                    {
+                        remainingSeeds += board[i]; 
+                        board[i] = 0;
+                    }
+                    board[0] += remainingSeeds;
+            	}
+            	else if(endP2) {
+                    int remainingSeeds = 0;
+                    for(int i = 1; i <= holes; i++)
+                    {
+                        remainingSeeds += board[i]; 
+                        board[i] = 0;
+                    }
+                    board[holes + 1] += remainingSeeds;
+            	}
+            	else {
+            		
+            	}
+                System.out.println("end game");
+                printBoard();
                 setEndGame(true);
             }    
             else
@@ -318,13 +382,29 @@ public class GameState
             }
             if(endGame(end))
             {
-                int remainingSeeds = 0;
-                for(int i = 1; i <= holes; i++)
-                {
-                    remainingSeeds += board[i]; 
-                    board[i] = 0;
-                }
-                board[holes + 1] += remainingSeeds;
+            	if(endP1) {
+                    int remainingSeeds = 0;
+                    for(int i = holes + 2; i <= size - 1; i++)
+                    {
+                        remainingSeeds += board[i]; 
+                        board[i] = 0;
+                    }
+                    board[0] += remainingSeeds;
+            	}
+            	else if(endP2) {
+                    int remainingSeeds = 0;
+                    for(int i = 1; i <= holes; i++)
+                    {
+                        remainingSeeds += board[i]; 
+                        board[i] = 0;
+                    }
+                    board[holes + 1] += remainingSeeds;
+            	}
+            	else {
+            		
+            	}
+                System.out.println("End Game");
+                printBoard();
                 setEndGame(true);
             } 
             else
@@ -339,6 +419,37 @@ public class GameState
         }
     }
     
+    public void printBoard(){
+		System.out.println("\n----Player 2----\n");
+            int size = holes*2 + 2;
+            //prints player 2 holes
+            System.out.print(" ");
+
+            for(int i = size-1; i >= holes+2; i--)
+            {
+                System.out.print(""+board[i]+" ");
+            }
+            System.out.println("");
+            System.out.print(""+board[0]);
+
+            //Prints both players score
+            for(int i = 0; i < holes; i++)
+            {
+                System.out.print("  ");
+            }
+            System.out.println(""+board[holes+1]);
+           // System.out.println("\n");
+            System.out.print(" ");
+
+            //prints player 1 holes
+            for(int i = 1; i <= holes; i++)
+            {
+                System.out.print(""+board[i]+" ");
+            }
+            System.out.println("\n");
+            System.out.println("----player 1----\n\n");
+            
+	}
   //checks to see if a GameState is equal to another 
   	public boolean equals(GameState gs)
   	{
