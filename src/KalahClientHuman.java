@@ -28,6 +28,7 @@ public class KalahClientHuman extends KalahClient
 	protected Timer timer;
 	
 	protected long currentTime;
+	protected boolean illegalMoveMade;
 	protected boolean needsAck;
 	protected boolean needsBegin;
 	protected boolean needsInfo;
@@ -35,6 +36,7 @@ public class KalahClientHuman extends KalahClient
 	protected String moveString;
 	protected boolean playerTurn;
 	protected boolean resetTimer;
+	protected boolean timeoutHappened;
 	protected long timeoutInMs;
 	
 	protected boolean potentialBonusMove;
@@ -68,12 +70,14 @@ public class KalahClientHuman extends KalahClient
 
 		frame.setVisible(true);
 
+		illegalMoveMade = false;
 		needsAck = false;
 		needsBegin = false;
 		needsInfo = false;
-		playerTurn = false;
 		madeFirstMove = false;
+		playerTurn = false;
 		resetTimer = true;
+		timeoutHappened = false;
 		
 		potentialBonusMove = false;
 		potentialGame = null;
@@ -699,7 +703,18 @@ public class KalahClientHuman extends KalahClient
 					kalahGame.hasWinner();
 					drawGameBoardScreen();
 
-					drawLoseScreen();
+					if (illegalMoveMade)
+					{
+						drawIllegalMoveScreen();
+					}
+					else if (timeoutHappened)
+					{
+						drawTimedOutScreen();
+					}
+					else
+					{
+						drawLoseScreen();
+					}
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -720,8 +735,7 @@ public class KalahClientHuman extends KalahClient
 				else if (line.startsWith("ILLEGAL"))
 				{
 					System.out.println("DEBUG -- Illegal move.");
-
-					drawIllegalMoveScreen();
+					illegalMoveMade = true;
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;
@@ -730,7 +744,7 @@ public class KalahClientHuman extends KalahClient
 				{
 					System.out.println("DEBUG -- Player took too long and timed out.");
 
-					drawTimedOutScreen();
+					timeoutHappened = true;
 					System.out.println("Returning to launch screen.");
 					quit();
 					return;

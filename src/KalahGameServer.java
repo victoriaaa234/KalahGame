@@ -479,6 +479,8 @@ class KalahGameServerLogic
 							public void run()
 							{
 								writeToClient("TIMEOUT");
+								writeToClient("LOSER");
+								opponent.writeToClient("TIMEOUT");
 								opponent.writeToClient("WINNER");
 							}
 						};
@@ -507,6 +509,7 @@ class KalahGameServerLogic
 								System.out.println("Received errant ack.");
 								writeToClient("ILLEGAL");
 								writeToClient("LOSER");
+								opponent.writeToClient("ILLEGAL");
 								opponent.writeToClient("WINNER");
 								System.out.println("Restarting the server.");
 								quit();
@@ -525,6 +528,7 @@ class KalahGameServerLogic
 							System.out.println("Received errant ready.");
 							writeToClient("ILLEGAL");
 							writeToClient("LOSER");
+							opponent.writeToClient("ILLEGAL");
 							opponent.writeToClient("WINNER");
 							System.out.println("Restarting the server.");
 							quit();
@@ -565,6 +569,7 @@ class KalahGameServerLogic
 									forceLoser(this);
 									writeToClient("ILLEGAL");
 									writeToClient("LOSER");
+									opponent.writeToClient("ILLEGAL");
 									opponent.writeToClient("WINNER");
 								}
 							}
@@ -573,6 +578,7 @@ class KalahGameServerLogic
 								System.out.println("Received command when needed an ack.");
 								writeToClient("ILLEGAL");
 								writeToClient("LOSER");
+								opponent.writeToClient("ILLEGAL");
 								opponent.writeToClient("WINNER");
 								System.out.println("Restarting the server.");
 								quit();
