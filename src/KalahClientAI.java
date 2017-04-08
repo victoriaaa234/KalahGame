@@ -61,6 +61,36 @@ public class KalahClientAI extends KalahClient
 	
 	protected void gotOpponentMove(String moves)
 	{
+//		if(gameAI.getEndGame()) {
+//			return;
+//		}
+//		if(gameOver)
+//		{
+//			if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] > 0)
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				System.out.println("Player One Lost");
+//				return;
+//			}
+//			else if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] < 0)
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				System.out.println("Player Two Lost");
+//				return;
+//			}
+//			else
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				System.out.println("Tie");
+//				return;
+//			}
+//		}
 		if(!turnAI)
 		{
 			if(!player)
@@ -144,33 +174,6 @@ public class KalahClientAI extends KalahClient
 					if(g.equals(gameAI.getNextChoice()))
 					{
 						gameAI = g;
-//						if(gameAI.getEndGame()) {
-//							gameOver = true;
-//							if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] > 0) {
-//								System.out.println("Player Two Won");
-//
-//								if(player) {
-//									writeToServer("WINNER");
-//								}
-//								else {
-//									writeToServer("LOSER");
-//								}
-//							}
-//							else if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] < 0) {
-//								System.out.println("Player One Won");
-//								if(player) {
-//									writeToServer("LOSER");
-//								}
-//								else {
-//									writeToServer("WINNER");
-//								}
-//							}
-//							else {
-//								System.out.println("Tie");
-//								writeToServer("TIE");
-//							}
-//						}
-						System.out.println("firsts " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
 						break;
 					}
 				}
@@ -216,7 +219,6 @@ public class KalahClientAI extends KalahClient
 					if(g.equals(gameAI.getNextChoice()))
 					{
 						gameAI = g;
-						System.out.println("firsts " + Minimax.parseTurnSequence(gameAI.getTurnSequence()));
 						break;
 					}
 				}
@@ -225,13 +227,44 @@ public class KalahClientAI extends KalahClient
 		}	
 		System.out.println("AI Results");
 		System.out.println(Minimax.parseTurnSequence(gameAI.getTurnSequence()));
+//		if(gameAI.getEndGame())
+//		{
+//			gameOver = true;
+//			if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] > 0)
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				
+//				System.out.println("Player Two Won");
+//				return;
+//			}
+//			else if(gameAI.getBoard()[0] - gameAI.getBoard()[gameAI.getHoles() + 1] < 0)
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				
+//				System.out.println("Player One Won");
+//				//return;
+//			}
+//			else
+//			{
+//				currentAI = new GameState(gameAI);
+//
+//				currentAI.printBoard();
+//				System.out.println("Tie");
+//				//return;
+//			}
+//		}
 		writeToServer(Minimax.parseTurnSequence(gameAI.getTurnSequence()));
 		currentAI = new GameState(gameAI);
+		
 	}
 	
 	public void createTree(boolean player)
 	{
-		Minimax.treeHelper(gameAI, 6, player);
+		Minimax.treeHelper(gameAI, 4, player);
 		Minimax.calcMinMax(gameAI, player);
 	}
 	
