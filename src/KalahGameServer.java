@@ -272,10 +272,7 @@ class KalahGameServerLogic
 			{
 				for (int i = 0; i < moves.length; ++i)
 				{
-					if (result == 1)
-					{
-						result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
-					}
+					result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
 				}
 			}
 			else
