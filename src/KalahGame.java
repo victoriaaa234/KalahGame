@@ -102,7 +102,7 @@ public class KalahGame
 				}
 				else if (playerIdx == 1)
 				{
-					if (finishIdx == endZoneIdx[1])
+					if (finishIdx == endZoneIdx[1] || finishIdx == endZoneIdx[0])
 					{
 						if (!isSideEmpty(1))
 						{

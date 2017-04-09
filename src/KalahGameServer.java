@@ -272,7 +272,21 @@ class KalahGameServerLogic
 			{
 				for (int i = 0; i < moves.length; ++i)
 				{
-					result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
+					if (result == 1)
+					{
+						result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
+					}
+					else
+					{
+						System.out.println("Got an invalid move from a player.");
+						return -1;
+					}
+					
+					if (result == 2)
+					{
+						System.out.println("Got an invalid move from a player.");
+						return -1;
+					}
 				}
 			}
 			else
