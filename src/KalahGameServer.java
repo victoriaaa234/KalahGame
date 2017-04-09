@@ -277,12 +277,6 @@ class KalahGameServerLogic
 						result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
 					}
 				}
-				
-				if (result == 2)
-				{
-					System.out.println("Got an illegal move from a player.");
-					return -1;
-				}
 			}
 			else
 			{
