@@ -265,14 +265,28 @@ class KalahGameServerLogic
 	{
 		if (move != null)
 		{
-			int result = Integer.MAX_VALUE;
+			int result = 1;
 			int playerIdx = (player == firstPlayer) ? 0 : 1;
 			String[] moves = move.split(" ");
 			if (moves.length > 0)
 			{
 				for (int i = 0; i < moves.length; ++i)
 				{
-					result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
+					if (result == 1)
+					{
+						result = kalahGame.executeMove(Integer.parseInt(moves[i]), playerIdx);
+					}
+					else
+					{
+						System.out.println("Got an illegal move from a player.");
+						return -1;
+					}
+				}
+				
+				if (result == 2)
+				{
+					System.out.println("Got an illegal move from a player.");
+					return -1;
 				}
 			}
 			else
