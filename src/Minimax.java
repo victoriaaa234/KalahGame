@@ -30,7 +30,8 @@ public class Minimax
         System.out.println("total run time : " + totalTime + " miliseconds");
     }
     
-    public static boolean getGameOverState() {
+    public static boolean getGameOverState()
+    {
     	return gameOver;
     }
     
@@ -49,7 +50,8 @@ public class Minimax
     /*parses turn sequence for values*/
     public static String parseTurnSequence(String turnSequence) 
     {
-    	if(turnSequence == null) {
+    	if(turnSequence == null)
+    	{
     		return "";
     	}
     	StringBuilder builder = new StringBuilder(turnSequence.length() + 1);
@@ -93,13 +95,16 @@ public class Minimax
     	StringBuilder finalStringBuilder = new StringBuilder(turn.length() + 1);
     	String[] finalWords = turn.split(" ");
     	int[] finalIntegers = new int[finalWords.length];
-    	for(int i = 0; i < finalWords.length; i++) {
+    	for(int i = 0; i < finalWords.length; i++)
+    	{
     	    finalIntegers[i] = Integer.parseInt(finalWords[i]);
     	}
-    	for(int i = 0; i < finalIntegers.length; i++) {
+    	for(int i = 0; i < finalIntegers.length; i++)
+    	{
     		finalIntegers[i] = finalIntegers[i] - 1;
     	}
-    	for(int i = 0; i < finalIntegers.length; i++) {
+    	for(int i = 0; i < finalIntegers.length; i++)
+    	{
     		finalWords[i] = Integer.toString(finalIntegers[i]);
     	}
     	for (int i = finalWords.length - 1; i >= 0; i--)
@@ -126,7 +131,7 @@ public class Minimax
     }
     
     /*populates min and max value. Player 1 is max and player 2 is min*/
-    public static void calcMinMax(GameState root,boolean minOrMax)
+    public static void calcMinMax(GameState root, boolean minOrMax)
     {
 /*            if(root.next.isEmpty()){
              root.setMinMax(root.getScore());
@@ -183,7 +188,8 @@ public class Minimax
             return root.getV();  
         }
         //Min player
-        else {
+        else
+        {
             root.setV(Integer.MAX_VALUE);
             for(GameState g: root.next)
             {
@@ -212,7 +218,7 @@ public class Minimax
     }
 
     //calculates the possible next moves
-    public static void buildTree(GameState current, GameState prev,boolean player)
+    public static void buildTree(GameState current, GameState prev, boolean player)
     {
         for(int i = 1; i <= current.getHoles(); i++)
         {
@@ -231,7 +237,7 @@ public class Minimax
     }
     
     //creates a tree of all possible moves
-    public static void treeHelper(GameState root,int depth,boolean player)
+    public static void treeHelper(GameState root, int depth, boolean player)
     {
         if(depth == 0)
             return;
