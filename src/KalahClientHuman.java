@@ -736,18 +736,11 @@ public class KalahClientHuman extends KalahClient
 				{
 					System.out.println("DEBUG -- Illegal move.");
 					illegalMoveMade = true;
-					System.out.println("Returning to launch screen.");
-					quit();
-					return;
 				}
 				else if (line.startsWith("TIMEOUT"))
 				{
 					System.out.println("DEBUG -- Player took too long and timed out.");
-
 					timeoutHappened = true;
-					System.out.println("Returning to launch screen.");
-					quit();
-					return;
 				}
 				else if (line.startsWith("P"))
 				{
