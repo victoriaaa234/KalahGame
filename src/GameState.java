@@ -233,6 +233,8 @@ public class GameState
     {
         if(player)
         {
+        	int startHouse = 0;
+
             turnSequence = ts + " P1:" + choice;
             if(choice < 1 || choice > holes)
             {
@@ -254,20 +256,32 @@ public class GameState
                 index++;
                 if((index) % size != 0)
                 {
-                        
+                    if(index % size == choice) {
+                    	startHouse ++;
+                    }
                     board[choice]--;
                     //war scenario
                     if(board[choice] == 0 && board[index % size] == 0 && index % size >= 1 && index % size <= holes && board[size - (index % size)] != 0)
                     {
-                        board[holes + 1] += board[size - (index % size)] + 1;
-                        board[size - (index % size)] = 0;
+                    	if(startHouse == 1 && index % size == choice) {
+                    		board[holes + 1] += board[size - (index % size)] + 1;
+                    		board[size - (index % size)] = 0;
+                    		startHouse --;
+                    	}
+                    	else {
+                    		board[holes + 1] += board[size - (index % size)] + 1;
+                    		board[size - (index % size)] = 0;
+                    	}
                     }
                     else
                     {
-                        board[index % size]++;
+                    	if(index % size != choice) {
+                            board[index % size]++;
+                    	}
                     }
                 }   
             }
+            board[choice] = startHouse;
             if(endGame(end))
             {
             	if(endP1)
@@ -305,6 +319,7 @@ public class GameState
         }
         else
         {
+        	int playerTwoStartHouse = 0;
             turnSequence = ts + " P2:" + choice;
             if(choice < 1 || choice > holes)
             {
@@ -325,20 +340,32 @@ public class GameState
                 index++;
                 if((index) % size != holes + 1)
                 {
+                	if(index % size == choice + holes + 1) {
+                		playerTwoStartHouse ++;
+                	}
                     board[choice + holes + 1]--;
                     //war scenario
                     if(board[choice + holes + 1] == 0 && board[index % size] == 0 && index % size >= holes + 2 && index % size <= size - 1 && board[size - (index % size)] != 0)
                     {
-                        board[0] += board[size - (index % size)] + 1;
-                        board[size - (index % size)] = 0;
+                    	if(playerTwoStartHouse == 1 && index % size == choice + holes + 1) {
+                            board[0] += board[size - (index % size)] + 1;
+                            board[size - (index % size)] = 0;
+                            playerTwoStartHouse --;
+                    	}
+                    	else {
+                    		board[0] += board[size - (index % size)] + 1;
+                    		board[size - (index % size)] = 0;
+                    	}
                     }
                     else
                     {
-                        board[index % size]++;
+                    	if(index % size != choice + holes + 1) {
+                    		board[index % size]++;
+                    	}
                     }
-                }   
-                
+                }     
             }
+            board[choice + holes + 1] = playerTwoStartHouse;
             if(endGame(end))
             {
             	if(endP1) {
